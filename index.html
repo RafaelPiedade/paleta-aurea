@@ -1,0 +1,1910 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paleta Áurea</title>
+<script>try{const t=localStorage.getItem('paleta-tema'); if(t==='light'||t==='dark') document.documentElement.dataset.theme=t;}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ea; --panel:#fffdf8; --ink:#1c1b19; --muted:#6d6a63; --line:#e2ddd2;
+  --chip:#efebe2; --focus:#1c1b19; --ok:#2e9e5b; --warn:#c98a12; --bad:#d0453a;
+  --shadow:0 1px 2px rgba(40,30,10,.06), 0 4px 16px rgba(40,30,10,.05);
+  --serif:"Fraunces", Georgia, serif;
+  --sans:"Inter", system-ui, -apple-system, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#141412; --panel:#1d1c1a; --ink:#f1eee7; --muted:#9c978c; --line:#2f2d29; --chip:#272622; --focus:#f1eee7; --shadow:none; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --bg:#141412; --panel:#1d1c1a; --ink:#f1eee7; --muted:#9c978c; --line:#2f2d29; --chip:#272622; --focus:#f1eee7; --shadow:none; color-scheme:dark; }
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
+button,input,select{font:inherit;color:inherit}
+[hidden]{display:none !important}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 20px 64px}
+
+/* ---------- top bar (fixo) ---------- */
+.bar{position:sticky;top:0;z-index:30;background:var(--bg);background:color-mix(in srgb, var(--bg) 84%, transparent);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid transparent;transition:border-color .2s, background .2s}
+.bar.scrolled{border-bottom-color:var(--line)}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;max-width:1240px;margin:0 auto;padding:12px 20px}
+.card{scroll-margin-top:calc(var(--hh,64px) + 12px)}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.logo{display:flex}
+.logo span{width:18px;height:18px;border-radius:50%;border:2px solid var(--bg);margin-left:-6px;transition:background .2s}
+.logo span:first-child{margin-left:0}
+h1{font-family:var(--serif);font-weight:600;font-size:24px;line-height:1;margin:0;letter-spacing:-.01em}
+.tools{display:flex;gap:8px;align-items:center}
+.iconbtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted)}
+.iconbtn:hover{color:var(--ink)}
+.iconbtn svg,.seg svg{width:16px;height:16px}
+
+.seg{display:flex;background:var(--chip);border:1px solid var(--line);border-radius:11px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1);font-weight:600}
+.modeSeg button{padding:8px 14px;font-size:14px}
+.modeSeg .mi{display:flex;border-radius:4px;overflow:hidden;height:14px}
+.modeSeg .mi i{width:7px}
+.themeSeg button{padding:7px 9px}
+@media (max-width:1040px){ .modeSeg{order:3;width:100%} }
+@media (max-width:640px){ .brand{margin-right:auto} .kbbtn{display:none} }
+
+/* ---------- layout ---------- */
+.layout{display:grid;grid-template-columns:290px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:920px){.layout{grid-template-columns:minmax(0,1fr)}}
+main{display:flex;flex-direction:column;gap:20px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow);min-width:0}
+aside.card{position:sticky;top:calc(var(--hh,64px) + 16px);padding:18px;max-height:calc(100vh - var(--hh,64px) - 32px);overflow-y:auto;scrollbar-width:thin;overscroll-behavior:contain}
+@media (max-width:920px){aside.card{position:static;max-height:none;overflow:visible}}
+.chead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+h2{font-family:var(--serif);font-weight:600;font-size:20px;margin:0;display:flex;align-items:center;gap:8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* info / tooltip */
+.info{width:18px;height:18px;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--muted);font-size:11px;font-weight:700;font-family:var(--sans);display:inline-flex;align-items:center;justify-content:center;cursor:help;padding:0;flex:none;line-height:1;vertical-align:middle}
+.info:hover,.info:focus-visible{color:var(--ink);border-color:var(--muted)}
+#tip{position:fixed;left:0;top:0;z-index:50;max-width:290px;background:var(--ink);color:var(--bg);font-size:13px;line-height:1.45;padding:10px 12px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none;opacity:0;transition:opacity .12s}
+#tip.show{opacity:1}
+#tip b{font-weight:600}
+
+/* ---------- controls ---------- */
+.group{padding:14px 0;border-top:1px solid var(--line)}
+.group:first-child{padding-top:0;border-top:0}
+.group:last-child{padding-bottom:0}
+.lbl{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 8px}
+.lbl.mt{margin-top:12px}
+.pick{display:flex;gap:8px;align-items:center}
+.pick input[type=color]{width:46px;height:42px;border:1px solid var(--line);border-radius:10px;padding:3px;background:var(--panel);cursor:pointer;flex:none}
+.pick input.hexin{flex:1;min-width:0;height:42px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:var(--bg);font-family:var(--mono);font-size:15px;text-transform:uppercase}
+.pick input.bad{border-color:var(--bad)}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.btn{border:1px solid var(--line);background:var(--chip);border-radius:9px;padding:7px 12px;cursor:pointer;font-size:13px;font-weight:500;transition:background .15s, transform .05s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{background:var(--line)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.primary:hover{opacity:.88}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn svg{width:14px;height:14px}
+.slider + .slider{margin-top:10px}
+.slider .top2{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.slider .top2 span{display:flex;align-items:center;gap:6px}
+.slider .top2 b{font-family:var(--mono);font-weight:600;font-size:12px}
+input[type=range]{width:100%;accent-color:var(--ink);margin:4px 0 0}
+.presets{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.preset{display:flex;flex-direction:column;align-items:flex-start;gap:6px;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px;cursor:pointer;font-size:12px;text-align:left;line-height:1.25}
+.preset:hover{border-color:var(--muted)}
+.preset.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.preset .tri{display:flex;border-radius:6px;overflow:hidden;height:22px;width:100%;border:1px solid var(--line)}
+.preset .tri span{flex:1}
+.clearbtn{width:42px;height:42px;flex:none;border-radius:10px;border:1px solid var(--line);background:var(--chip);cursor:pointer;color:var(--muted);font-size:16px}
+
+/* ---------- swatches ---------- */
+.swatches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:680px){.swatches{grid-template-columns:minmax(0,1fr)}}
+.sw{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--bg);display:flex;flex-direction:column}
+.sw .face{min-height:150px;padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;cursor:copy;position:relative;border:0;text-align:left;width:100%;transition:filter .15s}
+.sw .face:hover{filter:brightness(1.04)}
+.sw .role{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;opacity:.85}
+.sw .hex{font-family:var(--mono);font-size:28px;font-weight:600;letter-spacing:.02em;line-height:1.1}
+.sw .tap{font-size:11px;opacity:.7;display:flex;align-items:center;gap:5px}
+.sw .tap svg{width:12px;height:12px}
+.sw .num{position:absolute;top:13px;right:14px;font-family:var(--mono);font-size:11px;border:1px solid currentColor;border-radius:5px;padding:0 6px;opacity:.55}
+.sw .meta{padding:10px;display:flex;flex-direction:column;gap:6px}
+.copyrow{display:flex;align-items:center;gap:8px;border-radius:8px;padding:5px 5px 5px 8px;background:var(--panel);border:1px solid var(--line)}
+.copyrow code{flex:1;min-width:0;font-family:var(--mono);font-size:12px;line-height:1.35}
+.copyrow .tag{font-size:10px;font-weight:600;color:var(--muted);width:26px;flex:none;letter-spacing:.05em}
+.copyrow button{flex:none;border:0;background:var(--chip);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:4px}
+.copyrow button:hover{background:var(--line)}
+.copyrow button svg{width:12px;height:12px}
+.contrast{font-size:11px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:2px 2px 0}
+.contrast b{font-family:var(--mono);color:var(--ink);font-weight:600}
+.strip{display:flex;height:40px;border-radius:10px;overflow:hidden;margin-top:12px;border:1px solid var(--line)}
+.strip div{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:600;cursor:copy;white-space:nowrap;overflow:hidden}
+.warn{display:flex;gap:8px;align-items:flex-start;font-size:13px;background:var(--chip);border-radius:10px;padding:9px 12px;margin-top:12px;color:var(--ink)}
+.warn::before{content:"!";flex:none;width:18px;height:18px;border-radius:50%;background:var(--warn);color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+
+/* ---------- candidates ---------- */
+.cgrid{display:grid;grid-template-columns:58px repeat(4,minmax(0,1fr));gap:8px;align-items:stretch}
+.cgrid .ch{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);align-self:end;display:flex;align-items:center;gap:5px;cursor:help}
+.cgrid .gh{grid-column:1/-1;font-size:13px;color:var(--muted);padding:12px 0 2px;border-top:1px solid var(--line);margin-top:4px;display:flex;align-items:center;gap:6px}
+.cgrid .gh.first{border-top:0;margin-top:0;padding-top:4px}
+.cgrid .gh b{color:var(--ink)}
+.cgrid .rh{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;flex-direction:column;justify-content:center;line-height:1.3}
+.cgrid .rh b{color:var(--ink);font-size:13px}
+.cell{border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;background:var(--bg);position:relative;transition:transform .1s}
+.cell:hover{transform:translateY(-1px)}
+.cell.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.cell .pv{border:0;padding:0;cursor:pointer;height:64px;position:relative;display:block;width:100%}
+.cell .pv .m{position:absolute;left:10%;top:18%;width:52%;height:64%;border-radius:6px}
+.cell .pv .a{position:absolute;right:10%;top:28%;width:22%;aspect-ratio:1;border-radius:50%}
+.cell .pv .l{position:absolute;left:16%;bottom:30%;width:30%;height:5px;border-radius:3px}
+.cell .hx{border:0;background:transparent;font-family:var(--mono);font-size:11px;padding:5px 8px;cursor:copy;display:flex;justify-content:space-between;align-items:center;gap:6px;border-top:1px solid var(--line)}
+.cell .hx:hover{background:var(--chip)}
+.cell .hx svg{width:11px;height:11px;opacity:.5;flex:none}
+.badge{position:absolute;top:5px;left:5px;font-size:10px;font-weight:600;background:var(--ink);color:var(--bg);border-radius:5px;padding:1px 6px;pointer-events:none;z-index:1;white-space:nowrap}
+@media (max-width:760px){.badge .bl{display:none}}
+@media (max-width:600px){.cgrid{grid-template-columns:38px repeat(4,minmax(0,1fr));gap:5px} .cell .pv{height:50px} .cell .hx{font-size:9px;padding:4px} .cell .hx svg{display:none} .cgrid .ch{font-size:9px;letter-spacing:0} .cgrid .ch .info{display:none} .cgrid .rh{font-size:9px} .cgrid .rh b{font-size:11px} .badge{font-size:8px;padding:0 4px}}
+
+/* ---------- analysis ---------- */
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+@media (max-width:780px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.steps li{display:grid;grid-template-columns:26px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+.steps li:first-child{border-top:0;padding-top:0}
+.steps .n{width:26px;height:26px;border-radius:50%;background:var(--chip);border:1px solid var(--line);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.steps .n.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.steps .n.no{background:var(--chip);color:var(--muted)}
+.steps strong{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;margin-bottom:2px}
+.math{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.6}
+.math b{color:var(--ink);font-weight:600}
+.dot{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;border:1px solid rgba(128,128,128,.35);margin-right:4px}
+.wheelbox{display:flex;flex-direction:column;align-items:center;gap:12px}
+.wheelbox .chead{align-self:stretch}
+.wheel{position:relative;width:min(270px,100%);aspect-ratio:1}
+.wheel .ring{position:absolute;inset:0;border-radius:50%}
+.wheel .hole{position:absolute;inset:22%;border-radius:50%;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.wheel .hole b{font-family:var(--serif);font-size:28px;font-weight:600}
+.wheel .hole span{font-size:12px;color:var(--muted)}
+.wheel svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.legend{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-size:12px;color:var(--muted)}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:transparent;border-radius:8px;padding:5px 11px;font-size:13px;cursor:pointer;color:var(--muted)}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* poster */
+.posters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.poster{aspect-ratio:3/4;border-radius:10px;overflow:hidden;position:relative;border:1px solid var(--line)}
+.poster .t{position:absolute;left:8%;bottom:7%;font-family:var(--serif);font-weight:600;line-height:.95;font-size:clamp(18px,3vw,30px)}
+.poster .c1{position:absolute;border-radius:50%}
+.ratio{display:flex;height:26px;border-radius:8px;overflow:hidden;margin-top:12px;font-size:11px;font-weight:600;border:1px solid var(--line)}
+.ratio div{display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden}
+
+/* typography */
+.tctl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.tctl .f>span{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px}
+.tctl select,.tctl input{width:100%;min-width:0;height:38px;border:1px solid var(--line);border-radius:9px;background:var(--bg);padding:0 10px;font-size:14px}
+.tctl .wide{grid-column:1/-1}
+.tctl .gfrow{display:flex;gap:6px}
+.tctl .gfrow .btn{height:38px;flex:none}
+@media (max-width:760px){.tctl{grid-template-columns:repeat(2,minmax(0,1fr))} .tctl .gfrow{flex-wrap:wrap} .tctl .gfrow input{flex:1 1 100%}}
+.tgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:900px){.tgrid{grid-template-columns:minmax(0,1fr)}}
+.tex{display:flex;flex-direction:column;gap:8px;min-width:0}
+.tex .cap{font-size:12px;font-weight:600;color:var(--muted)}
+.tbox{aspect-ratio:4/5;border-radius:10px;overflow:hidden;position:relative;border:1px solid var(--line);padding:8%;display:flex;flex-direction:column;container-type:inline-size}
+.tbox .ov{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}
+.tbox .h{line-height:1.02;letter-spacing:-.01em;overflow-wrap:anywhere}
+.tbox .sb{line-height:1.2;margin-top:10px}
+.tbox p{margin:0;line-height:1.5}
+.tbox .bt{display:inline-flex;align-self:flex-start;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600;margin-top:12px}
+.tbox .giant{position:absolute;left:6%;top:7%;line-height:.82;white-space:nowrap;letter-spacing:-.03em;font-size:min(62cqw, calc(165cqw / var(--n)))}
+.tbox mark{padding:0 .12em;border-radius:.08em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:3px 8px;font-size:11px;cursor:copy;display:flex;align-items:center;gap:5px;color:var(--ink)}
+.chip:hover{border-color:var(--muted)}
+.chip b{font-family:var(--mono);font-weight:600}
+.chip i{width:7px;height:7px;border-radius:50%;flex:none}
+
+/* export */
+pre.code{margin:12px 0 0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px;font-family:var(--mono);font-size:12.5px;overflow:auto;white-space:pre;max-height:240px}
+.savedwrap{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.saved{display:flex;flex-wrap:wrap;gap:10px}
+.mini{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--line);cursor:pointer;height:34px;position:relative}
+.mini span{width:30px}
+.mini:hover{outline:2px solid var(--ink);outline-offset:1px}
+.mini .x{position:absolute;top:-1px;right:-1px;width:16px;height:16px;font-size:11px;line-height:14px;text-align:center;background:var(--ink);color:var(--bg);border-radius:0 0 0 6px;opacity:0;border:0;cursor:pointer;padding:0}
+.mini:hover .x,.mini:focus-within .x{opacity:1}
+.empty{color:var(--muted);font-size:13px}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.2s;display:flex;align-items:center;gap:8px;z-index:60}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast i{width:14px;height:14px;border-radius:4px;display:inline-block;border:1px solid rgba(128,128,128,.5)}
+
+/* ---------- modo 3: montar cor ---------- */
+.modeSeg .ms{display:none}
+.modeSeg .mi.rb{width:21px;background:linear-gradient(90deg,#ff4d4d,#ffc21a,#2ecc71,#1e90ff,#b44dff)}
+@media (max-width:640px){ .modeSeg button{padding:8px 6px;font-size:13px;gap:6px} .modeSeg .ml{display:none} .modeSeg .ms{display:inline} }
+.pick input.anyin{text-transform:none;font-size:13px}
+.fmtok{font-size:12px;color:var(--muted);margin-top:6px;min-height:18px}
+.fmtok.ok{color:var(--ok)}
+.fmtok.no{color:var(--bad)}
+.clearbtn svg{width:16px;height:16px}
+.sliders{margin-top:14px}
+.cs{display:grid;grid-template-columns:16px minmax(0,1fr) 64px;gap:10px;align-items:center}
+.cs + .cs{margin-top:12px}
+.cs .k{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--muted);cursor:help}
+.cs input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:14px;border-radius:999px;margin:0;background:var(--chip);box-shadow:inset 0 0 0 1px rgba(128,128,128,.3);cursor:pointer}
+.cs input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--thumb,#fff);border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.35),0 2px 6px rgba(0,0,0,.25);cursor:grab}
+.cs input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--thumb,#fff);border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.35),0 2px 6px rgba(0,0,0,.25);cursor:grab}
+.cs input[type=range]::-moz-range-track{background:transparent}
+.nb{display:flex;align-items:center;height:32px;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:0 6px 0 4px}
+.nb:focus-within{border-color:var(--muted)}
+.nb input{width:100%;min-width:0;border:0;background:transparent;font-family:var(--mono);font-size:13px;text-align:right;padding:0;outline:0;-moz-appearance:textfield;appearance:textfield}
+.nb input::-webkit-inner-spin-button,.nb input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.nb i{font-style:normal;font-size:11px;color:var(--muted);margin-left:2px;width:10px}
+.nudges{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.nudges .btn{justify-content:center}
+.frompal{display:flex;flex-direction:column;gap:8px}
+.fp{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.fp .cols{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--line);margin-left:auto;flex:none}
+.fp .cols button{width:32px;height:28px;border:0;cursor:pointer;padding:0}
+.fp .cols button:hover{filter:brightness(1.12)}
+
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:14px}
+@media (max-width:680px){.hero{grid-template-columns:minmax(0,1fr)}}
+.bigsw{border:0;border-radius:14px;min-height:220px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;text-align:left;cursor:copy;box-shadow:inset 0 0 0 1px rgba(128,128,128,.25);transition:filter .15s}
+.bigsw:hover{filter:brightness(1.04)}
+.bigsw .role{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;opacity:.85}
+.bigsw .hex{font-family:var(--mono);font-size:34px;font-weight:600;letter-spacing:.02em;line-height:1.1;display:block}
+.bigsw .tap{font-size:11px;opacity:.7;display:flex;align-items:center;gap:5px}
+.bigsw .tap svg{width:12px;height:12px}
+.vals{display:flex;flex-direction:column;gap:6px;min-width:0}
+.vals .copyrow .tag{width:44px}
+.reads{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}
+.reads span{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;background:var(--bg)}
+.reads span b{font-family:var(--mono);font-weight:600}
+.usebar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.usebar .empty{margin-right:4px}
+
+.cwheel{position:relative;width:min(280px,100%);aspect-ratio:1;touch-action:none;cursor:crosshair;border-radius:50%}
+.cwheel canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:50%}
+.wmark{position:absolute;width:22px;height:22px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.35);transform:translate(-50%,-50%);pointer-events:none}
+.wheelbox .sliders{align-self:stretch;margin-top:2px}
+#cv3{display:block;width:100%;height:320px;touch-action:none;cursor:grab;border-radius:12px}
+#cv3.drag{cursor:grabbing}
+.row3{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px}
+.row3 .seg{flex:1 1 auto}
+.card .legend.lg3{margin-top:10px}
+
+.harm{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.hg .ht{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.tiles{display:flex;gap:6px}
+.tile{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;transition:transform .1s}
+.tile:hover{transform:translateY(-1px)}
+.tile .pv{border:0;height:54px;cursor:pointer;padding:0;position:relative;display:block;width:100%}
+.tile .pv span{position:absolute;left:6px;top:5px;font-size:10px;font-weight:600;font-family:var(--mono);opacity:.85}
+.tile.me .pv{cursor:default}
+.tile.me{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.tile .hx{border:0;border-top:1px solid var(--line);background:transparent;font-family:var(--mono);font-size:11px;padding:5px 6px;cursor:copy;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .hx:hover{background:var(--chip)}
+.chead.mt2{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.scale{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+.scale .tile .pv{height:62px}
+@media (max-width:640px){.scale{grid-template-columns:repeat(5,minmax(0,1fr))} .tile .hx{font-size:10px;padding:4px}}
+.tile.near{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+
+/* ---------- modo 4: psicologia ---------- */
+@media (max-width:640px){ .modeSeg .mi{display:none} .modeSeg button{font-size:12.5px;padding:8px 4px} }
+.intents{display:flex;flex-wrap:wrap;gap:6px}
+.intents button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 11px;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.intents button:hover{border-color:var(--muted)}
+.intents button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ihint{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.45}
+.ihint b{color:var(--ink)}
+.presult{display:grid;grid-template-columns:210px minmax(0,1fr);gap:18px}
+@media (max-width:680px){.presult{grid-template-columns:minmax(0,1fr)}}
+.psw{border:0;border-radius:14px;min-height:190px;padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;text-align:left;cursor:copy;box-shadow:inset 0 0 0 1px rgba(128,128,128,.25)}
+.psw .role{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;opacity:.85}
+.psw .hex{font-family:var(--mono);font-size:26px;font-weight:600;display:block}
+.psw .tap{font-size:11px;opacity:.7;display:flex;align-items:center;gap:5px}
+.psw .tap svg{width:12px;height:12px}
+.pbody0{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ptitle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--serif);font-size:26px;font-weight:600;line-height:1.1}
+.tbadge{font-family:var(--sans);font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;background:var(--ink);color:var(--bg);cursor:help}
+.kw{display:flex;flex-wrap:wrap;gap:5px}
+.kw span{font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;background:var(--chip);border:1px solid var(--line)}
+.kw.big span{font-size:13px;padding:3px 11px}
+.pline{font-size:13px;line-height:1.5;color:var(--muted)}
+.pline b{color:var(--ink);font-weight:600}
+.pline.camp{border-left:3px solid var(--warn);padding-left:9px}
+.pvars{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:680px){.pvars{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.pvar{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg);cursor:pointer;padding:0;text-align:left;display:flex;flex-direction:column;transition:transform .1s}
+.pvar:hover{transform:translateY(-1px)}
+.pvar i{display:block;height:46px}
+.pvar span{font-size:11px;padding:5px 8px 6px;line-height:1.3;color:var(--muted)}
+.pvar span b{display:block;font-size:12px;color:var(--ink)}
+.pvar.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.pcard{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;transition:opacity .2s, box-shadow .2s;scroll-margin-top:calc(var(--hh,64px) + 16px)}
+.pcard.dim{opacity:.3}
+.pcard.hit,.pcard.me{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.pband{display:flex;height:76px;position:relative}
+.pband button{flex:1;border:0;cursor:copy;padding:0}
+.pband b{position:absolute;left:12px;bottom:9px;font-family:var(--serif);font-size:20px;font-weight:600;pointer-events:none}
+.pbody{padding:12px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.pfoot{display:flex;gap:6px;padding:0 14px 14px}
+.ppal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media (max-width:680px){.ppal{grid-template-columns:minmax(0,1fr)}}
+.ppal h3{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 4px}
+.prow{display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.ppal h3 + .prow{border-top:0}
+.prow i{width:36px;height:36px;border-radius:9px;box-shadow:inset 0 0 0 1px rgba(128,128,128,.3);cursor:pointer}
+.prow div{font-size:13px;line-height:1.4}
+.prow small{color:var(--muted);font-size:12px}
+.pnote{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--muted);line-height:1.5}
+.pnote b{color:var(--ink)}
+.reads.psyl b{font-family:var(--sans)}
+</style>
+</head>
+<body>
+<!-- ================= TOPO (fixo) ================= -->
+<div class="bar" id="bar">
+  <header class="top">
+    <div class="brand">
+      <span class="logo" id="logo"><span></span><span></span><span></span></span>
+      <h1>Paleta Áurea</h1>
+    </div>
+    <div class="seg modeSeg" id="modes" role="tablist" aria-label="Modo">
+      <button data-m="golden" data-tip="modeGolden"><span class="mi"><i style="background:#008CBB"></i><i style="background:#A1C5D1"></i><i style="background:#FFC20F"></i></span><span class="ml">Proporção áurea</span><span class="ms">Áurea</span></button>
+      <button data-m="pair" data-tip="modePair"><span class="mi"><i style="background:#08342C"></i><i style="background:#FFFFFF"></i><i style="background:#01FE91"></i></span><span class="ml">Dupla + destaque</span><span class="ms">Dupla</span></button>
+      <button data-m="studio" data-tip="modeStudio"><span class="mi rb"></span><span class="ml">Montar cor</span><span class="ms">Montar</span></button>
+      <button data-m="psy" data-tip="modePsy"><span class="mi"><i style="background:#E53935"></i><i style="background:#FBC02D"></i><i style="background:#1E6FD9"></i></span>Psicologia</button>
+    </div>
+    <div class="tools">
+      <button class="iconbtn kbbtn" data-tip="shortcuts" aria-label="Atalhos do teclado">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>
+      </button>
+      <div class="seg themeSeg" id="themeSeg" aria-label="Tema">
+        <button data-v="light" data-tip="Tema claro" aria-label="Tema claro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+        <button data-v="dark" data-tip="Tema escuro" aria-label="Tema escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+        <button data-v="auto" data-tip="Seguir o sistema" aria-label="Tema automático"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></button>
+      </div>
+    </div>
+  </header>
+</div>
+
+<div class="wrap">
+  <div class="layout" id="mainLayout">
+    <!-- ================= CONTROLES: ÁUREA ================= -->
+    <aside class="card" id="ctlGolden">
+      <div class="group">
+        <div class="lbl">Cor principal</div>
+        <div class="pick">
+          <input type="color" id="colorIn" aria-label="Seletor de cor">
+          <input type="text" class="hexin" id="hexIn" maxlength="7" spellcheck="false" autocomplete="off" aria-label="HEX">
+        </div>
+        <div class="row">
+          <button class="btn sm" id="exBtn" data-tip="example">Exemplo</button>
+          <button class="btn sm" data-rnd>Aleatória</button>
+          <button class="btn sm" data-paste data-tip="Cola um HEX copiado de outro lugar">Colar</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="lbl">Círculo cromático <button type="button" class="info" data-tip="wheel" aria-label="Mais informações">?</button></div>
+        <div class="seg" id="wheelSeg">
+          <button data-v="ryb">RYB · artista</button>
+          <button data-v="rgb">RGB · telas</button>
+        </div>
+        <div class="lbl mt">Sentido do giro <button type="button" class="info" data-tip="dir" aria-label="Mais informações">?</button></div>
+        <div class="seg" id="dirSeg">
+          <button data-v="-1">− 137,5°</button>
+          <button data-v="1">+ 137,5°</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="lbl">Suporte</div>
+        <div class="slider">
+          <div class="top2"><span>Menos saturação <button type="button" class="info" data-tip="satCut" aria-label="Mais informações">?</button></span><b id="satCutV"></b></div>
+          <input type="range" id="satCut" min="0" max="100" aria-label="Reduzir saturação do suporte">
+        </div>
+        <div class="slider">
+          <div class="top2"><span>Mais luz <button type="button" class="info" data-tip="supL" aria-label="Mais informações">?</button></span><b id="supLV"></b></div>
+          <input type="range" id="supL" min="-40" max="60" aria-label="Luz do suporte">
+        </div>
+      </div>
+      <div class="group">
+        <div class="lbl">Acento</div>
+        <div class="slider">
+          <div class="top2"><span>Luz <button type="button" class="info" data-tip="accL" aria-label="Mais informações">?</button></span><b id="accLV"></b></div>
+          <input type="range" id="accL" min="-40" max="50" aria-label="Luz do acento">
+        </div>
+        <div class="slider">
+          <div class="top2"><span>Saturação</span><b id="accSV"></b></div>
+          <input type="range" id="accS" min="-80" max="40" aria-label="Saturação do acento">
+        </div>
+        <div class="row" style="margin-top:12px"><button class="btn sm" id="resetBtn">Restaurar ajustes</button></div>
+      </div>
+    </aside>
+
+    <!-- ================= CONTROLES: DUPLA ================= -->
+    <aside class="card" id="ctlPair" hidden>
+      <div class="group">
+        <div class="lbl">Cor principal <button type="button" class="info" data-tip="pairMain" aria-label="Mais informações">?</button></div>
+        <div class="pick">
+          <input type="color" id="pAcol" aria-label="Seletor da cor principal">
+          <input type="text" class="hexin" id="pAhex" maxlength="7" spellcheck="false" autocomplete="off" aria-label="HEX da principal">
+        </div>
+        <div class="lbl mt">Fundo <button type="button" class="info" data-tip="pairBg" aria-label="Mais informações">?</button></div>
+        <div class="pick">
+          <input type="color" id="pBcol" aria-label="Seletor da cor de fundo">
+          <input type="text" class="hexin" id="pBhex" maxlength="7" spellcheck="false" autocomplete="off" aria-label="HEX do fundo">
+        </div>
+        <div class="row">
+          <button class="btn sm" id="bgW">Branco</button>
+          <button class="btn sm" id="bgK">Preto</button>
+          <button class="btn sm" id="swapBtn" data-tip="Troca principal e fundo">⇄ Trocar</button>
+          <button class="btn sm" data-rnd>Aleatória</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="lbl">Combinações prontas <button type="button" class="info" data-tip="presets" aria-label="Mais informações">?</button></div>
+        <div class="presets" id="presets"></div>
+      </div>
+      <div class="group">
+        <div class="lbl">Lado do círculo <button type="button" class="info" data-tip="side" aria-label="Mais informações">?</button></div>
+        <div class="seg" id="sideSeg">
+          <button data-v="1">+ horário</button>
+          <button data-v="-1">− anti-horário</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="lbl">Testar meu destaque <button type="button" class="info" data-tip="myAccent" aria-label="Mais informações">?</button></div>
+        <div class="pick">
+          <input type="color" id="pCcol" aria-label="Seletor do destaque">
+          <input type="text" class="hexin" id="pChex" maxlength="7" spellcheck="false" autocomplete="off" aria-label="HEX do destaque" placeholder="opcional">
+          <button class="clearbtn" id="pCclear" aria-label="Limpar destaque" data-tip="Voltar para a sugestão">×</button>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <!-- paleta -->
+      <section class="card">
+        <div class="chead">
+          <h2>Paleta</h2>
+          <div class="actions">
+            <button class="btn sm" data-save><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Salvar</button>
+            <button class="btn sm primary" data-copyall><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>Copiar paleta</button>
+          </div>
+        </div>
+        <div class="swatches" id="swatches"></div>
+        <div class="strip" id="strip"></div>
+        <div id="warns"></div>
+      </section>
+
+      <!-- candidatos (dupla) -->
+      <section class="card" id="candCard" hidden>
+        <div class="chead">
+          <h2>Destaques sugeridos <button type="button" class="info" data-tip="cand" aria-label="Mais informações">?</button></h2>
+          <span class="empty">Miniatura usa · HEX copia</span>
+        </div>
+        <div class="cgrid" id="cgrid"></div>
+      </section>
+
+      <!-- análise -->
+      <div class="grid2">
+        <section class="card">
+          <div class="chead"><h2 id="leftTitle"></h2></div>
+          <ol class="steps" id="leftBody"></ol>
+        </section>
+        <section class="card wheelbox">
+          <div class="chead"><h2>No círculo <button type="button" class="info" data-tip="wheelCard" aria-label="Mais informações">?</button></h2></div>
+          <div class="wheel">
+            <div class="ring" id="ring"></div>
+            <div class="hole"><b id="holeB"></b><span id="holeS"></span></div>
+            <svg id="wheelSvg" viewBox="0 0 100 100"></svg>
+          </div>
+          <div class="legend" id="legend"></div>
+        </section>
+      </div>
+
+      <!-- aplicação -->
+      <section class="card">
+        <div class="chead">
+          <h2>Aplicação <button type="button" class="info" data-tip="apply" aria-label="Mais informações">?</button></h2>
+          <div class="tabs" id="applyTabs">
+            <button data-p="type" class="on">Tipografia</button>
+            <button data-p="comp">Composição</button>
+          </div>
+        </div>
+
+        <div id="panelType">
+          <div class="tctl">
+            <label class="f"><span>Fonte dos títulos</span><select id="ftSel"></select></label>
+            <label class="f"><span>Peso</span><select id="fwSel"></select></label>
+            <label class="f"><span>Fonte do texto</span><select id="fbSel"></select></label>
+            <label class="f"><span>Título</span><input id="ttIn" maxlength="40" spellcheck="false"></label>
+            <div class="f wide"><span>Outra fonte do Google Fonts <button type="button" class="info" data-tip="gf" aria-label="Mais informações">?</button></span>
+              <div class="gfrow">
+                <input id="gfIn" placeholder="ex.: Sora, Gloock, Rubik Mono One" autocomplete="off" aria-label="Nome da fonte do Google Fonts">
+                <button class="btn" id="gfBtn">Usar no título</button>
+                <button class="btn" id="gfBtn2">Usar no texto</button>
+                <button class="btn" id="fontRnd">Sortear</button>
+                <button class="btn primary" id="fontCss" data-tip="Copia o @import do Google Fonts com fontes, tamanhos e cores">Copiar CSS</button>
+              </div>
+            </div>
+          </div>
+          <div class="tgrid" id="tgrid"></div>
+        </div>
+
+        <div id="panelComp" hidden>
+          <div class="posters" id="posters"></div>
+          <div class="ratio" id="ratio"></div>
+        </div>
+      </section>
+
+      <!-- exportar -->
+      <section class="card">
+        <div class="chead">
+          <h2>Exportar <button type="button" class="info" data-tip="export" aria-label="Mais informações">?</button></h2>
+          <button class="btn sm primary" data-copyall>Copiar</button>
+        </div>
+        <div class="tabs" id="tabs">
+          <button data-f="hex" class="on">HEX</button>
+          <button data-f="css">CSS</button>
+          <button data-f="scss">SCSS</button>
+          <button data-f="tailwind">Tailwind</button>
+          <button data-f="json">JSON</button>
+          <button data-f="txt">Texto</button>
+        </div>
+        <pre class="code" id="code"></pre>
+        <div class="savedwrap">
+          <div class="lbl">Paletas salvas <button type="button" class="info" data-tip="saved" aria-label="Mais informações">?</button></div>
+          <div class="saved" id="saved"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ================= MODO 3: MONTAR COR ================= -->
+  <div class="layout" id="studio" hidden>
+    <aside class="card" id="ctlStudio">
+      <div class="group">
+        <div class="lbl">Colar ou digitar <button type="button" class="info" data-tip="anyIn" aria-label="Mais informações">?</button></div>
+        <div class="pick">
+          <input type="text" class="hexin anyin" id="anyIn" spellcheck="false" autocomplete="off" placeholder="#008CBB · rgb(…) · hsl(…)" aria-label="Cor em HEX, RGB, HSL ou HSB">
+          <button class="clearbtn" id="anyPaste" data-tip="Colar da área de transferência" aria-label="Colar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/></svg></button>
+        </div>
+        <div class="fmtok" id="anyOk"></div>
+        <div class="lbl mt">HEX</div>
+        <div class="pick">
+          <input type="color" id="sCol" aria-label="Seletor de cor">
+          <input type="text" class="hexin" id="sHex" maxlength="7" spellcheck="false" autocomplete="off" aria-label="HEX">
+        </div>
+      </div>
+      <div class="group">
+        <div class="lbl">Ajustar <button type="button" class="info" data-tip="models" aria-label="Mais informações">?</button></div>
+        <div class="seg" id="smSeg">
+          <button data-v="hsl">HSL</button>
+          <button data-v="hsb">HSB</button>
+          <button data-v="rgb">RGB</button>
+        </div>
+        <div class="sliders" id="sliders"></div>
+      </div>
+      <div class="group">
+        <div class="lbl">Ajustes rápidos</div>
+        <div class="nudges">
+          <button class="btn sm" data-nudge="l,8">Mais clara</button>
+          <button class="btn sm" data-nudge="l,-8">Mais escura</button>
+          <button class="btn sm" data-nudge="s,10">Mais viva</button>
+          <button class="btn sm" data-nudge="s,-10">Mais suave</button>
+          <button class="btn sm" data-nudge="h,180" data-tip="Gira 180°: a complementar">Oposta</button>
+          <button class="btn sm" data-rnd>Aleatória</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="lbl">Pegar das paletas <button type="button" class="info" data-tip="fromPal" aria-label="Mais informações">?</button></div>
+        <div class="frompal" id="fromPal"></div>
+      </div>
+    </aside>
+
+    <main>
+      <section class="card">
+        <div class="chead">
+          <h2>Sua cor</h2>
+          <button class="btn sm primary" id="sCopyAll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>Copiar valores</button>
+        </div>
+        <div class="hero">
+          <button class="bigsw" id="bigsw"></button>
+          <div class="vals" id="vals"></div>
+        </div>
+        <div class="usebar">
+          <span class="empty">Usar esta cor em:</span>
+          <button class="btn sm" data-use="golden">Proporção áurea</button>
+          <button class="btn sm" data-use="pa">Dupla · principal</button>
+          <button class="btn sm" data-use="cus">Dupla · destaque</button>
+          <button class="btn sm" data-use="psy">Psicologia</button>
+        </div>
+      </section>
+
+      <div class="grid2">
+        <section class="card wheelbox">
+          <div class="chead"><h2>Círculo cromático <button type="button" class="info" data-tip="wheel2" aria-label="Mais informações">?</button></h2></div>
+          <div class="cwheel" id="cwheel"><canvas id="wheelCv"></canvas><span class="wmark" id="wmark"></span></div>
+          <div class="sliders" id="wheelL"></div>
+          <div class="legend">Ângulo = matiz · distância do centro = saturação</div>
+        </section>
+        <section class="card">
+          <div class="chead"><h2>Espaço HSL 3D <button type="button" class="info" data-tip="hsl3d" aria-label="Mais informações">?</button></h2></div>
+          <canvas id="cv3" aria-label="Espaço de cor HSL em 3D"></canvas>
+          <div class="row3">
+            <div class="seg" id="shapeSeg">
+              <button data-v="cyl">Cilindro</button>
+              <button data-v="cone">Cone duplo</button>
+            </div>
+            <div class="seg" id="viewSeg">
+              <button data-view="3d">3D</button>
+              <button data-view="top" data-tip="Visto de cima: vira o círculo cromático">Topo</button>
+              <button data-view="side" data-tip="De frente para a fatia da matiz">Lado</button>
+            </div>
+          </div>
+          <div class="legend lg3">Arraste para girar · clique no disco ou na fatia para escolher</div>
+        </section>
+      </div>
+
+      <section class="card">
+        <div class="chead">
+          <h2>Harmonias <button type="button" class="info" data-tip="harm" aria-label="Mais informações">?</button></h2>
+          <span class="empty">Miniatura usa · HEX copia</span>
+        </div>
+        <div class="harm" id="harm"></div>
+        <div class="chead mt2">
+          <h2>Escala de tons <button type="button" class="info" data-tip="scale" aria-label="Mais informações">?</button></h2>
+          <button class="btn sm" id="scaleCopy">Copiar CSS</button>
+        </div>
+        <div class="scale" id="scale"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ================= MODO 4: PSICOLOGIA ================= -->
+  <div class="layout" id="psy" hidden>
+    <aside class="card">
+      <div class="group">
+        <div class="lbl">Analisar uma cor <button type="button" class="info" data-tip="psyIn" aria-label="Mais informações">?</button></div>
+        <div class="pick">
+          <input type="color" id="psyCol" aria-label="Seletor de cor">
+          <input type="text" class="hexin anyin" id="psyIn" spellcheck="false" autocomplete="off" placeholder="#E94D9C · rgb(…) · hsl(…)" aria-label="Cor para analisar">
+        </div>
+        <div class="fmtok" id="psyOk"></div>
+        <div class="row">
+          <button class="btn sm" data-rnd>Aleatória</button>
+          <button class="btn sm" id="psyFromStudio" data-tip="Analisa a cor que está no Montar cor">Do Montar cor</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="lbl">O que você quer transmitir? <button type="button" class="info" data-tip="intent" aria-label="Mais informações">?</button></div>
+        <div class="intents" id="intents"></div>
+        <div class="ihint" id="ihint"></div>
+      </div>
+    </aside>
+    <main>
+      <section class="card" id="psyResult"></section>
+      <section class="card" id="pgridCard">
+        <div class="chead">
+          <h2>Ficha rápida <button type="button" class="info" data-tip="pgrid" aria-label="Mais informações">?</button></h2>
+          <span class="empty">Clique nas faixas para copiar</span>
+        </div>
+        <div class="pgrid" id="pgrid"></div>
+      </section>
+      <section class="card">
+        <div class="chead"><h2>O que suas paletas transmitem <button type="button" class="info" data-tip="ppal" aria-label="Mais informações">?</button></h2></div>
+        <div class="ppal" id="ppal"></div>
+      </section>
+      <section class="card">
+        <div class="chead"><h2>Antes de usar</h2></div>
+        <ul class="pnote">
+          <li><b>É tendência, não regra.</b> O público, o contexto e o conjunto da peça pesam mais que uma cor sozinha.</li>
+          <li><b>O tom muda a mensagem.</b> O mesmo vermelho é vinho elegante no escuro e rosa delicado no claro.</li>
+          <li><b>A cultura também.</b> No Brasil, verde e amarelo lembram o país e a seleção, e o branco lembra paz e Réveillon.</li>
+          <li><b>A proporção decide.</b> A cor dominante (60%) define o clima; o destaque (10%) chama a ação.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+</div>
+<div id="tip" role="tooltip" hidden></div>
+<div class="toast" id="toast" aria-live="polite"><i id="toastDot"></i><span id="toastTxt"></span></div>
+
+<script>
+/* ================= TEXTOS DE AJUDA (tooltips) ================= */
+const TIPS = {
+  modeGolden: 'Parte de <b>1 cor</b>. O acento sai girando o ângulo áureo (137,5°) no círculo e o suporte é a principal com menos saturação e mais luz.',
+  modePair: 'Parte de <b>2 cores</b>: uma viva e um fundo neutro. Sugere a 3ª por dois caminhos: <b>contraste</b> (lado oposto do círculo) ou <b>mesma família</b> (tom sobre tom).',
+  modePsy: 'O que cada cor transmite: analise uma cor, procure pela intenção ou consulte a ficha rápida.',
+  psyIn: 'Cole ou digite uma cor em qualquer formato (HEX, RGB, HSL, HSB ou nome CSS). A leitura considera a <b>família</b> da cor e o <b>tom</b> (pastel, escuro, terroso…).',
+  intent: 'Escolha o que a peça precisa passar. As cores que combinam ficam destacadas e vão para o começo da ficha.',
+  psyVars: 'A mesma matiz com outra luz e saturação. Repare como a mensagem muda. Clique para analisar.',
+  tone: 'O <b>tom</b> vem da luz e da saturação, e muda bastante o que a cor transmite.',
+  pgrid: 'Resumo de cada família de cor: o que transmite, cuidados, onde usar e as campanhas de conscientização do calendário brasileiro.',
+  ppal: 'A leitura das cores montadas nos modos Proporção áurea e Dupla + destaque. Clique em uma cor para analisar.',
+  psyLink: 'O que essa cor transmite. Veja mais no modo <b>Psicologia</b>.',
+  modeStudio: 'Monte uma cor do zero ou cole uma que você já tem (HEX, RGB, HSL ou HSB). Mexa em matiz, saturação e luz e veja onde ela fica no círculo e no espaço HSL em 3D.',
+  shortcuts: '<b>1 2 3</b> copiam cada cor (no Montar cor: HEX, RGB, HSL)<br><b>A</b> copia a paleta<br><b>R</b> cor aleatória<br><b>M</b> troca o modo<br><b>T</b> troca o tema<br><b>⌘V / Ctrl+V</b> cola uma cor no Montar cor',
+  anyIn: 'Aceita <b>#008CBB</b>, <b>008CBB</b>, <b>rgb(0, 140, 187)</b>, <b>hsl(195, 100%, 37%)</b>, <b>hsb(195, 100%, 73%)</b>, só os números (<b>0, 140, 187</b>) e nomes CSS como <b>tomato</b>.<br>Com a página em foco, <b>⌘V / Ctrl+V</b> também cola.',
+  models: '<b>HSL</b> é o do CSS: luz 50% é a cor pura e 100% é branco.<br><b>HSB</b> (ou HSV) é o do Figma e do Photoshop: brilho 100% é a cor no máximo, sem virar branco.<br><b>RGB</b> é a mistura de luz vermelha, verde e azul da tela (0–255).',
+  ch_h: '<b>Matiz</b>: a posição no círculo, de 0° a 360°. 0 vermelho, 120 verde, 240 azul.',
+  ch_s: '<b>Saturação</b> (HSL): 0% é cinza, 100% é a cor mais pura possível naquela luz.',
+  ch_l: '<b>Luz</b> (HSL): 0% é preto, 50% é a cor pura, 100% é branco.',
+  ch_sv: '<b>Saturação</b> (HSB): 0% é cinza ou branco, 100% é a cor pura.',
+  ch_v: '<b>Brilho</b> (HSB): 0% é preto, 100% é a cor no brilho máximo, sem branco misturado.',
+  fromPal: 'As cores montadas nos outros dois modos. Clique em uma para trazer e ajustar aqui.',
+  wheel2: 'O círculo das telas (RGB), o mesmo dos valores HSL. O <b>ângulo</b> é a matiz e a <b>distância do centro</b> é a saturação.<br>O disco mostra a luz atual: mude a luz no controle de baixo.',
+  hsl3d: 'O HSL é um <b>cilindro</b>: a matiz dá a volta, a saturação vai do eixo (cinza) para a borda e a luz sobe do preto ao branco.<br>O <b>disco</b> é a luz atual. A <b>fatia</b> vertical é a sua matiz, com a complementar do outro lado.<br>No <b>cone duplo</b> o espaço afina no preto e no branco: perto deles a saturação quase não aparece.',
+  harm: 'Cores que saem de giros fixos no círculo (RGB), com a mesma saturação e luz da sua. Clique na miniatura para continuar a partir dela.',
+  hComp: 'O lado oposto do círculo (180°): o contraste máximo de matiz.',
+  hGold: 'O giro de 137,5° da proporção áurea, nos dois sentidos.',
+  hAnalog: 'Vizinhas no círculo (±30°): combinações calmas e naturais.',
+  hTri: 'Três cores com 120° entre elas: vibrante e equilibrado.',
+  hSplit: 'Em vez da oposta exata, as duas vizinhas dela (150° e 210°): contraste mais suave.',
+  scale: 'A mesma matiz e saturação em 10 luzes, no padrão 50–900 usado em sites e no Tailwind. A marcada é a mais próxima da sua cor.',
+  read: 'Leitura rápida: temperatura, intensidade e luz da cor.',
+  example: 'Carrega <b>#008CBB</b>, a cor do exemplo original da fórmula, com os ajustes padrão.',
+  wheel: '<b>RYB</b> é o círculo dos pintores: azul ↔ laranja são opostos. É ele que reproduz o exemplo original.<br><b>RGB</b> é o das telas: azul ↔ amarelo.',
+  dir: 'O giro de 137,5° pode ir nos dois sentidos do círculo. Cada um dá um acento diferente.',
+  satCut: 'Quanto da saturação da principal é tirado para criar o suporte. A fórmula usa cerca de <b>60%</b>.',
+  supL: 'Clareia o suporte para ele funcionar como cor de apoio ou fundo.',
+  accL: 'Ajusta a luz do acento. Em <b>+16</b> o resultado fica perto do exemplo original (#FFC20F).',
+  pairMain: 'A cor com mais personalidade. Se a cor viva estiver no campo do fundo, os papéis são trocados sozinhos.',
+  pairBg: 'Funciona melhor <b>quase branco</b> ou <b>quase preto</b>: dá respiro e deixa as outras duas brilharem.',
+  presets: 'Combinações de referência. Ao carregar uma, o destaque original aparece e a grade marca o candidato <b>mais próximo</b>.',
+  side: 'Em qual sentido do círculo procurar o destaque. Inverta para ver a outra metade das opções.',
+  myAccent: 'Digite uma 3ª cor sua para ver como ela fica com a dupla. A grade marca o candidato mais próximo dela.',
+  cand: '<b>Linhas:</b> distância da principal no círculo RYB.<br><b>Contraste</b> (105–165°): temperatura oposta; o ângulo áureo fica no meio.<br><b>Mesma família</b> (±7,5°): tom sobre tom, funciona com principal escura.<br><b>Colunas:</b> luz e saturação do destaque.',
+  contrastG: 'Lado oposto do círculo, temperatura oposta. Ex.: azul + rosa/coral.',
+  analogG: 'Quase a mesma matiz, com muito mais luz e saturação. Ex.: verde escuro + verde neon.',
+  wheelCard: '<b>P</b> = principal, <b>A</b>/<b>D</b> = acento/destaque. As faixas cinza mostram onde ficam as combinações que funcionam.',
+  apply: '<b>Tipografia:</b> tamanhos na escala áurea 13 → 21 → 34 → 55 px. Os selos mostram o contraste de leitura (WCAG); clique para copiar o par em CSS.<br><b>Composição:</b> regra 60·30·10, a cor dominante ocupa a maior área e o destaque aparece pouco.',
+  gf: 'Digite o nome exato de qualquer fonte de <b>fonts.google.com</b>.',
+  contrast: 'Contraste com texto branco e preto (WCAG). <b>4,5:1</b> ou mais é bom para texto corrido.',
+  export: 'Copie a paleta no formato do seu projeto. Os nomes das variáveis seguem o papel de cada cor.',
+  saved: 'Ficam guardadas só neste navegador. Clique para carregar.',
+  sBg: 'Um fundo quase branco ou quase preto dá respiro e deixa as outras duas cores brilharem.',
+  sMain: 'Uma principal bem saturada define a cara da paleta.',
+  sAcc: '<b>Contraste:</b> 105–165° no círculo RYB, temperatura oposta.<br><b>Mesma família:</b> ±7,5°, tom sobre tom.',
+  sLight: 'Com mais luz e saturação que a principal, o destaque "salta" dela.',
+  gStep1: 'A cor de partida. Os valores são matiz (H), saturação (S) e luz (L).',
+  gStep2: 'A proporção áurea é 1,618. Dividindo a volta (360°) por ela e pegando o resto, chega-se ao ângulo áureo.',
+  gStep3: 'Gira-se 137,5° a partir da principal. No modo RYB a conta é feita no círculo dos pintores e convertida de volta para a tela.',
+  gStep4: 'Mesma matiz da principal, com menos saturação e mais luz: uma cor calma de apoio.',
+};
+
+/* ================= DADOS ================= */
+const GOLD = 360 - 360 / 1.618; // ≈ 137.5
+const DEF = { mode:'golden', base:'008CBB', wheel:'ryb', dir:-1, satCut:60, supL:36, accL:16, accS:0,
+              pa:'0693C6', pb:'FCFCFF', side:1, pick:'2,1', cus:'',
+              ft:'Fraunces', fb:'Inter', fw:700, tt:'Cor & forma',
+              ch:195.08, cs:100, cl:36.67, sm:'hsl', c3:'cyl', psy:'E94D9C', pi:'' };
+const PRESETS = [
+  { a:'0693C6', b:'FCFCFF', c:'D83995', name:'Azul + rosa' },
+  { a:'0297DE', b:'02070A', c:'FC734D', name:'Azul + coral no escuro' },
+  { a:'09318D', b:'FFFFFF', c:'FD91CC', name:'Marinho + rosa claro' },
+  { a:'08342C', b:'FFFFFF', c:'01FE91', name:'Verde + neon' },
+];
+// linhas = distância no círculo RYB · 0–4 contraste, 5–7 mesma família
+const OFFS = [105, 120, GOLD, 150, 165, -7.5, 0, 7.5];
+const ANALOG = 5;
+const VARS = [
+  { name:'Mesmo brilho', tip:'Mesma luminância da principal: as cores "vibram" lado a lado.' },
+  { name:'Vivo',         tip:'Saturado, luz média (60%).' },
+  { name:'Pastel',       tip:'Claro e saturado (luz 79%). Elegante sobre cores escuras.' },
+  { name:'Neon',         tip:'Saturação máxima, luz 50%. Ideal para tom sobre tom.' },
+];
+const ICON_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>';
+
+let st = { ...DEF };
+let fmt = 'hex';
+let pal = null;
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const store = { get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} } };
+
+/* ================= MATEMÁTICA DE COR ================= */
+const clamp = (v,a=0,b=100) => Math.min(b, Math.max(a, v));
+const mod = (v,m) => ((v % m) + m) % m;
+function hexToRgb(h){ h=h.replace('#',''); if(h.length===3) h=h.split('').map(c=>c+c).join(''); const n=parseInt(h,16); return {r:n>>16&255,g:n>>8&255,b:n&255}; }
+function rgbToHex({r,g,b}){ return [r,g,b].map(v=>clamp(Math.round(v),0,255).toString(16).padStart(2,'0')).join('').toUpperCase(); }
+function rgbToHsl({r,g,b}){
+  r/=255; g/=255; b/=255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b), d=max-min; let h=0, s=0; const l=(max+min)/2;
+  if(d){ s=d/(1-Math.abs(2*l-1));
+    if(max===r) h=60*mod((g-b)/d,6); else if(max===g) h=60*((b-r)/d+2); else h=60*((r-g)/d+4); }
+  return {h, s:s*100, l:l*100};
+}
+function hslToRgb({h,s,l}){
+  s/=100; l/=100; const c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((mod(h,360)/60)%2-1)), m=l-c/2;
+  const [r,g,b]=[[c,x,0],[x,c,0],[0,c,x],[0,x,c],[x,0,c],[c,0,x]][Math.floor(mod(h,360)/60)];
+  return {r:(r+m)*255, g:(g+m)*255, b:(b+m)*255};
+}
+const MAP = [[0,0],[35,60],[60,120],[120,180],[240,240],[277,300],[360,360]]; // [rgb, ryb]
+function interp(v, from, to){
+  v = mod(v,360);
+  for(let i=0;i<MAP.length-1;i++){ const a=MAP[i], b=MAP[i+1];
+    if(v>=a[from] && v<=b[from]) return a[to] + (v-a[from])/(b[from]-a[from])*(b[to]-a[to]); }
+  return v;
+}
+const rgbToRyb = h => interp(h,0,1), rybToRgb = h => interp(h,1,0);
+function lum({r,g,b}){ const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)}; return .2126*f(r)+.7152*f(g)+.0722*f(b); }
+function contrast(a,b){ const L1=lum(a), L2=lum(b); return (Math.max(L1,L2)+.05)/(Math.min(L1,L2)+.05); }
+const chroma = ({r,g,b}) => (Math.max(r,g,b)-Math.min(r,g,b))/255;
+const dist = (a,b) => Math.hypot(a.r-b.r, a.g-b.g, a.b-b.b);
+const fmtN = (n,d=1) => n.toFixed(d).replace('.',',').replace(/,0$/,'');
+const signDeg = v => (v>0?'+':v<0?'−':'') + fmtN(Math.abs(v)) + '°';
+const WHITE={r:255,g:255,b:255}, BLACK={r:0,g:0,b:0};
+function fromHex(hex){ const rgb=hexToRgb(hex); return {hex:hex.toUpperCase(), rgb, hsl:rgbToHsl(rgb)}; }
+function mk(hsl){ return fromHex(rgbToHex(hslToRgb(hsl))); }
+function matchLum(h,s,target){ let lo=0, hi=100; for(let i=0;i<24;i++){ const m=(lo+hi)/2; lum(hslToRgb({h,s,l:m}))<target ? lo=m : hi=m; } return (lo+hi)/2; }
+function normHex(h){ h=(h||'').replace('#','').trim().toUpperCase(); if(/^[0-9A-F]{3}$/.test(h)) h=h.split('').map(c=>c+c).join(''); return /^[0-9A-F]{6}$/.test(h)?h:null; }
+const esc = s => String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const textOn = c => contrast(c.rgb,WHITE) >= contrast(c.rgb,BLACK) ? '#fff' : '#111';
+const info = k => `<button type="button" class="info" data-tip="${k}" aria-label="Mais informações">?</button>`;
+
+/* ================= MODO 1: PROPORÇÃO ÁUREA ================= */
+function computeGolden(){
+  const primary=fromHex(st.base), hsl=primary.hsl;
+  const baseWheel = st.wheel==='ryb' ? rgbToRyb(hsl.h) : hsl.h;
+  const accWheel = mod(baseWheel + st.dir*GOLD, 360);
+  const accH = st.wheel==='ryb' ? rybToRgb(accWheel) : accWheel;
+  const accent = mk({h:accH, s:clamp(hsl.s+st.accS), l:clamp(hsl.l+st.accL)});
+  const supS = hsl.s*(1-st.satCut/100);
+  const support = mk({h:hsl.h, s:supS, l:clamp(hsl.l+st.supL)});
+  return {
+    roles:[ {key:'primary',name:'Primária',c:primary,w:60}, {key:'support',name:'Suporte',c:support,w:30}, {key:'accent',name:'Acento',c:accent,w:10} ],
+    primary, support, accent, baseWheel, accWheel, accH, supS,
+    warns: hsl.s<1 ? ['Cores neutras (cinzas) não têm matiz, então o giro não muda a cor. Escolha uma cor com saturação.'] : [],
+    poster:{dom:primary, sub:support, pop:accent},
+    type:{surface:support, ink:primary, pop:accent},
+    wheel:{ kind:st.wheel, pins:[{deg:baseWheel,c:primary,t:'P'},{deg:accWheel,c:accent,t:'A'}], dir:st.dir, bands:null,
+            hb:'137,5°', hs:'ângulo áureo',
+            legend:[[primary,`Principal ${fmtN(baseWheel,0)}°`],[accent,`Acento ${fmtN(accWheel,0)}°`]] }
+  };
+}
+
+/* ================= MODO 2: DUPLA + DESTAQUE ================= */
+function computePair(){
+  let main=fromHex(st.pa), bg=fromHex(st.pb);
+  const swapped = chroma(bg.rgb) > chroma(main.rgb) + .05;
+  if(swapped) [main,bg]=[bg,main];
+  const baseR = rgbToRyb(main.hsl.h);
+  const tLum = lum(main.rgb);
+  const grid = OFFS.map(off=>{
+    const h = rybToRgb(mod(baseR + st.side*off, 360));
+    return [ mk({h, s:78, l:clamp(matchLum(h,78,tLum),30,72)}), mk({h, s:92, l:60}), mk({h, s:95, l:79}), mk({h, s:100, l:50}) ];
+  });
+  // sugestão: na linha do ângulo áureo, a variação que mais se destaca do fundo sem sumir na principal
+  let rec=[2,1], best=-1;
+  grid[2].forEach((c,j)=>{ const sc=Math.min(contrast(c.rgb,bg.rgb),3)*1.5 + Math.min(contrast(c.rgb,main.rgb),3); if(sc>best){best=sc;rec=[2,j];} });
+  let pop, custom=false;
+  const cus = normHex(st.cus);
+  if(st.pick==='custom' && cus){ pop=fromHex(cus); custom=true; }
+  else { const [i,j]=(st.pick||'').split(',').map(Number); pop = (grid[i]&&grid[i][j]) || grid[rec[0]][rec[1]]; }
+  let near=null, nd=1e9;
+  if(custom) grid.forEach((r,i)=>r.forEach((c,j)=>{ const d=dist(c.rgb,pop.rgb); if(d<nd){nd=d;near=[i,j];} }));
+  const popR = rgbToRyb(pop.hsl.h);
+  const off = mod(st.side*(popR-baseR)+180,360)-180;
+  const absOff = mod(popR-baseR+180,360)-180;
+  const family = Math.abs(off)<=40 ? 'analog' : 'contrast';
+  const neutralBg = bg.hsl.s<25 || bg.hsl.l>92 || bg.hsl.l<8;
+  const warns=[];
+  if(swapped) warns.push(`#${main.hex} é a cor mais saturada, então virou a principal e #${bg.hex} virou o fundo.`);
+  if(!neutralBg) warns.push('O fundo não está neutro. Esse padrão funciona melhor com um fundo quase branco ou quase preto.');
+  return {
+    roles:[ {key:'primary',name:'Principal',c:main,w:30}, {key:'background',name:'Fundo',c:bg,w:60}, {key:'highlight',name:'Destaque',c:pop,w:10} ],
+    main, bg, pop, grid, rec, near, custom, baseR, popR, off, family, neutralBg, warns,
+    preset: PRESETS.findIndex(p=>p.a===st.pa && p.b===st.pb && custom && p.c===cus),
+    poster:{dom:bg, sub:main, pop},
+    type:{surface:bg, ink:main, pop},
+    wheel:{ kind:'ryb', pins:[{deg:baseR,c:main,t:'P'},{deg:popR,c:pop,t:'D'}], dir:absOff>=0?1:-1,
+            bands:[[baseR+st.side*105, baseR+st.side*165, st.side], [baseR-7.5, baseR+7.5, 1]],
+            hb:signDeg(Math.round(off*2)/2), hs:family==='analog'?'mesma família':'contraste',
+            legend:[[main,`Principal ${Math.round(baseR)}°`],[pop,`Destaque ${Math.round(popR)}°`]] }
+  };
+}
+
+/* ================= COPIAR ================= */
+async function copy(text, color, label){
+  let ok=false;
+  try{ await navigator.clipboard.writeText(text); ok=true; }catch(e){}
+  if(!ok){ const t=document.createElement('textarea'); t.value=text; t.style.position='fixed'; t.style.opacity='0'; document.body.appendChild(t); t.select(); try{ ok=document.execCommand('copy'); }catch(e){} t.remove(); }
+  toast(ok ? `Copiado: ${label||text}` : 'Não foi possível copiar', color);
+}
+let tt;
+function toast(msg,color){ $('#toastTxt').textContent=msg; $('#toastDot').style.background=color?'#'+color:'transparent'; $('#toastDot').style.display=color?'inline-block':'none'; $('#toast').classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>$('#toast').classList.remove('show'),1500); }
+
+/* ================= FORMATOS ================= */
+const rgbStr = c => `rgb(${c.rgb.r}, ${c.rgb.g}, ${c.rgb.b})`;
+const hslStr = c => `hsl(${Math.round(c.hsl.h)}, ${Math.round(c.hsl.s)}%, ${Math.round(c.hsl.l)}%)`;
+function exportText(f){
+  const R = pal.roles, pad = n => ' '.repeat(Math.max(0, 11 - n.length));
+  switch(f){
+    case 'hex': return R.map(r=>'#'+r.c.hex).join('\n');
+    case 'css': return `:root {\n${R.map(r=>`  --color-${r.key}:${pad(r.key)}#${r.c.hex};`).join('\n')}\n}`;
+    case 'scss': return R.map(r=>`$color-${r.key}:${pad(r.key)}#${r.c.hex};`).join('\n');
+    case 'tailwind': return `// tailwind.config.js → theme.extend.colors\ncolors: {\n${R.map(r=>`  ${r.key}:${pad(r.key)}'#${r.c.hex}',`).join('\n')}\n}`;
+    case 'json': return JSON.stringify(Object.fromEntries(R.map(r=>[r.key,'#'+r.c.hex])), null, 2);
+    case 'txt': return R.map(r=>`${(r.name+':').padEnd(11)}#${r.c.hex}  ${rgbStr(r.c)}`).join('\n');
+  }
+}
+
+/* ================= RENDER ================= */
+function row(tag,val,hex){ return `<div class="copyrow"><span class="tag">${tag}</span><code>${val}</code><button data-copy="${val}" data-hex="${hex}" aria-label="Copiar ${tag}">${ICON_COPY}Copiar</button></div>`; }
+function pickInput(id, hex){ $('#'+id+'col').value='#'+(hex||'000000').toLowerCase(); if(document.activeElement!==$('#'+id+'hex')) $('#'+id+'hex').value=hex||''; $('#'+id+'hex').classList.remove('bad'); }
+
+function render(){
+  $$('#modes button').forEach(b=>{ const on=b.dataset.m===st.mode; b.classList.toggle('on',on); b.setAttribute('aria-selected',on); });
+  const sd = st.mode==='studio', ps = st.mode==='psy';
+  $('#mainLayout').hidden = sd||ps; $('#studio').hidden = !sd; $('#psy').hidden = !ps;
+  if(sd){ renderStudio(); return; }
+  if(ps){ renderPsy(); return; }
+  const g = st.mode==='golden';
+  pal = g ? computeGolden() : computePair();
+  $('#ctlGolden').hidden=!g; $('#ctlPair').hidden=g; $('#candCard').hidden=g;
+  $$('#logo span').forEach((s,i)=>s.style.background='#'+pal.roles[i].c.hex);
+
+  $('#swatches').innerHTML = pal.roles.map((r,i)=>{
+    const c=r.c, fg=textOn(c);
+    return `<div class="sw">
+      <button class="face" style="background:#${c.hex};color:${fg}" data-copy="#${c.hex}" data-hex="${c.hex}" aria-label="Copiar ${r.name} #${c.hex}">
+        <span class="num">${i+1}</span>
+        <span class="role">${r.name}</span>
+        <span><span class="hex">#${c.hex}</span><span class="tap">${ICON_COPY}clique para copiar</span></span>
+      </button>
+      <div class="meta">
+        ${row('HEX','#'+c.hex,c.hex)}${row('RGB',rgbStr(c),c.hex)}${row('HSL',hslStr(c),c.hex)}
+        <div class="contrast"><span>branco <b>${fmtN(contrast(c.rgb,WHITE))}</b></span><span>preto <b>${fmtN(contrast(c.rgb,BLACK))}</b></span>${info('contrast')}</div>
+      </div></div>`;
+  }).join('');
+
+  const byW=[...pal.roles].sort((a,b)=>b.w-a.w);
+  $('#strip').innerHTML = byW.map(r=>`<div style="flex:${r.w};background:#${r.c.hex};color:${textOn(r.c)}" data-copy="#${r.c.hex}" data-hex="${r.c.hex}" data-tip="${r.name} · ${r.w}% · clique para copiar">${r.w>=30?r.w+'%':''}</div>`).join('');
+  $('#ratio').innerHTML = byW.map(r=>`<div style="flex:${r.w};background:#${r.c.hex};color:${textOn(r.c)}">${r.w}%${r.w>10?' '+r.name.toLowerCase():''}</div>`).join('');
+  $('#warns').innerHTML = pal.warns.map(w=>`<div class="warn">${esc(w)}</div>`).join('');
+
+  if(g){ renderGoldenSteps(); syncGoldenCtl(); } else { renderPairSteps(); renderGrid(); syncPairCtl(); }
+  renderWheel(); renderPosters(); renderType(); renderCode();
+  writeHash();
+}
+let hashT;
+function writeHash(){
+  clearTimeout(hashT);
+  hashT=setTimeout(()=>{ try{ const o=Object.fromEntries(Object.entries(st).map(([k,v])=>[k, typeof v==='number' ? Math.round(v*100)/100 : v])); history.replaceState(null,'','#'+new URLSearchParams(o).toString()); }catch(e){} }, 200);
+}
+
+function syncGoldenCtl(){
+  $('#colorIn').value='#'+st.base.toLowerCase();
+  if(document.activeElement!==$('#hexIn')) $('#hexIn').value=st.base;
+  $('#hexIn').classList.remove('bad');
+  $('#satCutV').textContent=st.satCut+'%';
+  $('#supLV').textContent=(st.supL>0?'+':'')+st.supL;
+  $('#accLV').textContent=(st.accL>0?'+':'')+st.accL;
+  $('#accSV').textContent=(st.accS>0?'+':'')+st.accS;
+  ['satCut','supL','accL','accS'].forEach(k=>$('#'+k).value=st[k]);
+  $$('#wheelSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===st.wheel));
+  $$('#dirSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.v===st.dir));
+}
+function syncPairCtl(){
+  pickInput('pA', st.pa); pickInput('pB', st.pb);
+  pickInput('pC', st.pick==='custom' ? normHex(st.cus) : pal.pop.hex);
+  if(st.pick!=='custom' && document.activeElement!==$('#pChex')) $('#pChex').value='';
+  $('#pCclear').hidden = st.pick!=='custom';
+  $$('#sideSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.v===st.side));
+  $$('.preset').forEach((b,i)=>b.classList.toggle('on', i===pal.preset));
+}
+
+const dot = c => `<span class="dot" style="background:#${c.hex}"></span>`;
+function renderGoldenSteps(){
+  const {primary:p, support:s, accent:a} = pal;
+  const sign = st.dir<0 ? '−' : '+';
+  const accLine = st.wheel==='ryb'
+    ? `${fmtN(pal.baseWheel)}° ${sign} 137,5° = <b>${fmtN(pal.accWheel)}°</b> no RYB → ${Math.round(pal.accH)}° na tela`
+    : `${Math.round(p.hsl.h)}° ${sign} 137,5° = <b>${fmtN(pal.accWheel)}°</b>`;
+  const adj = (st.accL||st.accS) ? ` · luz ${st.accL>=0?'+':''}${st.accL}${st.accS?` · sat ${st.accS>0?'+':''}${st.accS}`:''}` : '';
+  $('#leftTitle').textContent='Como foi calculado';
+  $('#leftBody').innerHTML = `
+    <li><span class="n">1</span><div><strong>Cor principal ${info('gStep1')}</strong>
+      <div class="math">${dot(p)}<b>#${p.hex}</b> · H ${Math.round(p.hsl.h)}° S ${Math.round(p.hsl.s)}% L ${Math.round(p.hsl.l)}%</div></div></li>
+    <li><span class="n">2</span><div><strong>Ângulo áureo ${info('gStep2')}</strong>
+      <div class="math">360 ÷ 1,618 = 222,5 → 360 − 222,5 = <b>137,5°</b></div></div></li>
+    <li><span class="n">3</span><div><strong>Acento ${info('gStep3')}</strong>
+      <div class="math">${accLine}${adj}<br>${dot(a)}<b>#${a.hex}</b></div></div></li>
+    <li><span class="n">4</span><div><strong>Suporte ${info('gStep4')}</strong>
+      <div class="math">S ${Math.round(p.hsl.s)}% − ${st.satCut}% = ${Math.round(pal.supS)}%${st.supL?` · luz ${st.supL>0?'+':''}${st.supL}`:''}<br>${dot(s)}<b>#${s.hex}</b></div></div></li>`;
+}
+
+function renderPairSteps(){
+  const {main:m, bg:b, pop:p} = pal;
+  const inBand = pal.family==='analog' ? Math.abs(pal.off)<=15 : (pal.off>=100 && pal.off<=170);
+  const dL = Math.round(p.hsl.l - m.hsl.l);
+  const item = (ok, title, tip, body) => `<li><span class="n ${ok?'ok':'no'}">${ok?'✓':'–'}</span><div><strong>${title} ${info(tip)}</strong><div class="math">${body}</div></div></li>`;
+  $('#leftTitle').textContent='Análise da combinação';
+  $('#leftBody').innerHTML =
+    item(pal.neutralBg, 'Fundo neutro', 'sBg', `${dot(b)}<b>#${b.hex}</b> · luz ${Math.round(b.hsl.l)}%`) +
+    item(m.hsl.s>=50, 'Principal saturada', 'sMain', `${dot(m)}<b>#${m.hex}</b> · saturação ${Math.round(m.hsl.s)}%`) +
+    item(inBand, pal.family==='analog' ? 'Destaque da mesma família' : 'Destaque em contraste', 'sAcc', `${dot(p)}<b>#${p.hex}</b> · <b>${signDeg(Math.round(pal.off*2)/2)}</b> da principal${inBand?'':' · fora das faixas'}`) +
+    item(dL>0 && p.hsl.s>=m.hsl.s-10, 'Destaque mais claro', 'sLight', `luz ${Math.round(m.hsl.l)}% → <b>${Math.round(p.hsl.l)}%</b> (${dL>=0?'+':''}${dL}) · saturação ${Math.round(p.hsl.s)}%`);
+}
+const rowLabel = i => OFFS[i]===GOLD ? '137,5°' : i>=ANALOG ? signDeg(OFFS[i]) : OFFS[i]+'°';
+
+function renderGrid(){
+  const {main:m, bg:b, grid, rec, near, custom} = pal;
+  const cur = custom ? null : (st.pick && grid[+st.pick.split(',')[0]] ? st.pick : rec.join(','));
+  let h = `<div></div>${VARS.map(v=>`<div class="ch" data-tip="${esc(v.tip)}">${v.name}</div>`).join('')}`;
+  grid.forEach((r,i)=>{
+    if(i===0) h += `<div class="gh first"><b>Contraste</b> · lado oposto ${info('contrastG')}</div>`;
+    if(i===ANALOG) h += `<div class="gh"><b>Mesma família</b> · tom sobre tom ${info('analogG')}</div>`;
+    h += `<div class="rh"><b>${rowLabel(i)}</b>${OFFS[i]===GOLD?'áureo':''}</div>`;
+    r.forEach((c,j)=>{
+      const id=i+','+j, on=id===cur;
+      const badge = (near && near[0]===i && near[1]===j) ? '≈<span class="bl"> mais próximo</span>' : (rec[0]===i && rec[1]===j ? '★<span class="bl"> sugestão</span>' : '');
+      h += `<div class="cell${on?' on':''}">
+        ${badge?`<span class="badge">${badge}</span>`:''}
+        <button class="pv" data-pick="${id}" style="background:#${b.hex}" aria-label="Usar #${c.hex} como destaque">
+          <span class="m" style="background:#${m.hex}"></span><span class="l" style="background:#${c.hex}"></span><span class="a" style="background:#${c.hex}"></span>
+        </button>
+        <button class="hx" data-copy="#${c.hex}" data-hex="${c.hex}" aria-label="Copiar #${c.hex}"><span>#${c.hex}</span>${ICON_COPY}</button>
+      </div>`;
+    });
+  });
+  $('#cgrid').innerHTML = h;
+}
+
+function wheelGradient(kind){
+  const stops=[];
+  for(let d=0; d<=360; d+=10){ const h = kind==='ryb' ? rybToRgb(d) : d; stops.push(`#${rgbToHex(hslToRgb({h,s:85,l:55}))} ${d}deg`); }
+  return `conic-gradient(from 0deg, ${stops.join(',')})`;
+}
+function renderWheel(){
+  const W = pal.wheel;
+  $('#ring').style.background = wheelGradient(W.kind);
+  const pt = (deg,R) => { const r=(deg-90)*Math.PI/180; return [50+R*Math.cos(r), 50+R*Math.sin(r)]; };
+  const arc = (a,b,R,dir) => { const [sx,sy]=pt(a,R), [ex,ey]=pt(b,R); const span=mod(dir*(b-a),360); return `M ${sx} ${sy} A ${R} ${R} 0 ${span>180?1:0} ${dir>0?1:0} ${ex} ${ey}`; };
+  const [p0,p1]=W.pins;
+  const close = Math.abs(mod(p1.deg-p0.deg+180,360)-180) < 16;
+  const pin = ({deg,c,t}) => { const [x,y]=pt(deg, close ? (t==='P'?33:45) : 39); return `<circle cx="${x}" cy="${y}" r="6.5" fill="#${c.hex}" stroke="#fff" stroke-width="1.6"/><circle cx="${x}" cy="${y}" r="6.5" fill="none" stroke="rgba(0,0,0,.25)" stroke-width=".4"/><text x="${x}" y="${y+1.6}" text-anchor="middle" font-size="4.6" font-weight="700" fill="${textOn(c)}" font-family="Inter,sans-serif">${t}</text>`; };
+  const band = (W.bands||[]).map(([a,b,d])=>`<path d="${arc(a,b,26,d)}" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".2" style="color:var(--ink)"/>`).join('');
+  $('#wheelSvg').innerHTML = band + `<path d="${arc(p0.deg,p1.deg,26,W.dir)}" fill="none" stroke="currentColor" stroke-width=".8" stroke-dasharray="1.6 1.2" style="color:var(--muted)"/>` + pin(p0) + pin(p1);
+  $('#holeB').textContent=W.hb; $('#holeS').textContent=W.hs;
+  $('#legend').innerHTML = W.legend.map(([c,t])=>`<span>${dot(c)}${t}</span>`).join('');
+}
+
+function renderPosters(){
+  const {dom, sub, pop} = pal.poster;
+  const txt = contrast(pop.rgb,dom.rgb) >= contrast(sub.rgb,dom.rgb) ? pop : sub;
+  const [top, rest] = chroma(dom.rgb) >= chroma(sub.rgb) ? [dom, sub] : [sub, dom];
+  $('#posters').innerHTML = `
+    <div class="poster" style="background:#${dom.hex}">
+      <div class="c1" style="width:78%;aspect-ratio:1;background:#${sub.hex};left:-14%;top:8%"></div>
+      <div class="c1" style="width:22%;aspect-ratio:1;background:#${pop.hex};right:12%;top:14%"></div>
+      <div class="t" style="color:#${txt.hex}">Golden<br>Ratio</div>
+    </div>
+    <div class="poster" style="background:#${rest.hex}">
+      <div style="position:absolute;left:0;right:0;top:0;height:61.8%;background:#${top.hex}"></div>
+      <div style="position:absolute;left:8%;top:52%;width:38%;height:16%;border-radius:999px;background:#${pop.hex};display:flex;align-items:center;justify-content:center;font-weight:600;font-size:clamp(10px,1.4vw,14px);color:${textOn(pop)}">Botão</div>
+      <div class="t" style="color:#${top.hex};font-size:clamp(14px,2.2vw,22px)">1 : 1,618</div>
+    </div>`;
+}
+function renderCode(){ $('#code').textContent = exportText(fmt); }
+
+/* ================= TIPOGRAFIA ================= */
+const FONTS = [
+  ['Fraunces','serif',[400,600,700,900]], ['Playfair Display','serif',[400,700,900]], ['DM Serif Display','serif',[400]],
+  ['Instrument Serif','serif',[400]], ['Cormorant Garamond','serif',[400,600,700]], ['Lora','serif',[400,600,700]],
+  ['Libre Baskerville','serif',[400,700]], ['Source Serif 4','serif',[400,600,700,900]],
+  ['Inter','sans-serif',[400,500,600,700,800,900]], ['Poppins','sans-serif',[400,500,600,700,800,900]],
+  ['Montserrat','sans-serif',[400,500,600,700,800,900]], ['DM Sans','sans-serif',[400,500,600,700,800,900]],
+  ['Space Grotesk','sans-serif',[400,500,600,700]], ['Manrope','sans-serif',[400,500,600,700,800]],
+  ['Outfit','sans-serif',[400,500,600,700,800,900]], ['Work Sans','sans-serif',[400,500,600,700,800,900]],
+  ['Bricolage Grotesque','sans-serif',[400,500,600,700,800]], ['Syne','sans-serif',[400,500,600,700,800]],
+  ['Roboto','sans-serif',[400,500,700,900]], ['Open Sans','sans-serif',[400,600,700,800]], ['Nunito','sans-serif',[400,600,700,800,900]],
+  ['Unbounded','display',[400,500,600,700,800,900]], ['Bebas Neue','display',[400]], ['Anton','display',[400]],
+  ['Archivo Black','display',[400]], ['Oswald','display',[400,500,600,700]], ['Dela Gothic One','display',[400]], ['Abril Fatface','display',[400]],
+  ['JetBrains Mono','monospace',[400,700,800]], ['Space Mono','monospace',[400,700]],
+  ['Pacifico','cursive',[400]], ['Caveat','cursive',[400,500,600,700]],
+];
+const GROUPS = { serif:'Serifadas', 'sans-serif':'Sem serifa', display:'Display / impacto', monospace:'Monoespaçadas', cursive:'Manuscritas', custom:'Suas fontes' };
+const WNAMES = {100:'Thin',200:'ExtraLight',300:'Light',400:'Regular',500:'Medium',600:'SemiBold',700:'Bold',800:'ExtraBold',900:'Black'};
+const loadedFonts = new Set();
+const fontInfo = n => { const f=FONTS.find(x=>x[0]===n); return f ? {name:f[0], cat:f[1], w:f[2]} : {name:n, cat:'custom', w:[400,700]}; };
+const fallback = cat => ({serif:'serif', monospace:'monospace', cursive:'cursive'})[cat] || 'sans-serif';
+const fam = n => `'${n}', ${fallback(fontInfo(n).cat)}`;
+const gfParam = (n,w) => 'family=' + n.trim().replace(/ +/g,'+') + (w && !(w.length===1 && w[0]===400) ? ':wght@'+w.join(';') : '');
+const gfUrl = list => 'https://fonts.googleapis.com/css2?' + list.map(([n,w])=>gfParam(n,w)).join('&') + '&display=swap';
+const cleanName = n => (n||'').replace(/[^A-Za-z0-9 ]/g,'').replace(/\s+/g,' ').trim().replace(/\b\w/g, c=>c.toUpperCase());
+function loadFont(name, weights){
+  const key=name+'|'+(weights||[]).join(';'); if(loadedFonts.has(key)) return Promise.resolve(true);
+  return new Promise(res=>{
+    const l=document.createElement('link'); l.rel='stylesheet'; l.href=gfUrl([[name,weights]]);
+    l.onload=()=>{ loadedFonts.add(key); res(true); }; l.onerror=()=>{ l.remove(); res(false); };
+    document.head.appendChild(l);
+  });
+}
+function loadFontFull(name){
+  const f=fontInfo(name);
+  if(f.cat!=='custom') return loadFont(name, f.w);
+  return loadFont(name, [400]).then(ok=>{ if(ok) loadFont(name,[700]); return ok; });
+}
+function buildFontSelects(){
+  const customs=[...new Set([st.ft, st.fb].filter(n=>fontInfo(n).cat==='custom'))];
+  const opts = Object.keys(GROUPS).map(g=>{
+    const items = g==='custom' ? customs : FONTS.filter(f=>f[1]===g).map(f=>f[0]);
+    return items.length ? `<optgroup label="${GROUPS[g]}">${items.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('')}</optgroup>` : '';
+  }).join('');
+  $('#ftSel').innerHTML=opts; $('#fbSel').innerHTML=opts;
+}
+function fixWeight(){
+  const w=fontInfo(st.ft).w;
+  if(!w.includes(st.fw)) st.fw = w.reduce((a,b)=>Math.abs(b-st.fw)<Math.abs(a-st.fw)?b:a);
+  $('#fwSel').innerHTML = w.map(x=>`<option value="${x}">${x} · ${WNAMES[x]}</option>`).join('');
+}
+function grade(r){ return r>=7?['AAA','var(--ok)']: r>=4.5?['AA','var(--ok)']: r>=3?['AA grande','var(--warn)']:['baixo','var(--bad)']; }
+function chip(label, fg, bg){
+  const r=contrast(fg.rgb,bg.rgb), [g,col]=grade(r);
+  return `<button class="chip" data-copy="color: #${fg.hex}; background: #${bg.hex};" data-hex="${fg.hex}" data-tip="Copiar o par em CSS"><i style="background:${col}"></i>${label} <b>${fmtN(r)}:1</b> ${g}</button>`;
+}
+const best = (bg, ...cs) => cs.reduce((a,b)=>contrast(b.rgb,bg.rgb)>contrast(a.rgb,bg.rgb)?b:a);
+
+function renderType(){
+  fixWeight();
+  const {surface:S, ink:I, pop:P} = pal.type;
+  const tf=fam(st.ft), bf=fam(st.fb), fw=st.fw, maxW=Math.max(...fontInfo(st.ft).w);
+  const title=(st.tt||'').trim() || 'Cor & forma';
+  const words=title.split(/\s+/);
+  const giant=words[0];
+  const marked = words.length>1 ? esc(words.slice(0,-1).join(' '))+' <mark>'+esc(words[words.length-1])+'</mark>' : '<mark>'+esc(title)+'</mark>';
+  const H = (px,c,extra='') => `class="h" style="font-family:${esc(tf)};font-weight:${fw};font-size:${px}px;color:#${c.hex};${extra}"`;
+  const B = `font-family:${esc(bf)}`;
+  const lab1 = contrast(P.rgb,S.rgb)>=1.8 ? P : I;
+  const btnFg = fromHex(textOn(P)==='#fff'?'FFFFFF':'111111');
+  const markFg = best(P, I, S, btnFg);
+  const para = 'A proporção 1 : 1,618 organiza tamanhos e cores. A principal dá identidade, o fundo respira e o destaque guia o olhar.';
+
+  $('#tgrid').innerHTML = `
+  <div class="tex"><div class="cap">Título + texto</div>
+    <div class="tbox" style="background:#${S.hex}">
+      <div class="ov" style="${B};color:#${lab1.hex}">Estudo de cor</div>
+      <div ${H(34,I)}>${esc(title)}</div>
+      <div class="sb" style="${B};font-size:21px;color:#${I.hex}">Uma paleta, três papéis</div>
+      <p style="${B};font-size:13px;color:#${I.hex};opacity:.85;margin-top:auto">${para}</p>
+      <span class="bt" style="${B};background:#${P.hex};color:${textOn(P)}">Saiba mais →</span>
+    </div>
+    <div class="chips">${chip('Título',I,S)}${chip('Rótulo',lab1,S)}${chip('Botão',btnFg,P)}</div>
+  </div>
+  <div class="tex"><div class="cap">Texto sobreposto</div>
+    <div class="tbox" style="background:#${S.hex}">
+      <div class="giant" style="--n:${Math.max(giant.length,2)};font-family:${esc(tf)};font-weight:${maxW};color:#${I.hex}">${esc(giant)}</div>
+      <div ${H(55,P,'position:absolute;left:8%;right:8%;top:38%;line-height:.95')}>${esc(title)}</div>
+      <p style="${B};font-size:13px;color:#${I.hex};margin-top:auto;max-width:80%">Texto grande atrás, título por cima: a sobreposição cria profundidade.</p>
+    </div>
+    <div class="chips">${chip('Sobre a palavra',P,I)}${chip('Sobre o fundo',P,S)}${chip('Palavra',I,S)}</div>
+  </div>
+  <div class="tex"><div class="cap">Invertido + marca-texto</div>
+    <div class="tbox" style="background:#${I.hex}">
+      <div class="ov" style="${B};color:#${S.hex};opacity:.8">Edição nº 1</div>
+      <div ${H(34,S)}>${marked.replace('<mark>',`<mark style="background:#${P.hex};color:#${markFg.hex}">`)}</div>
+      <p style="${B};font-size:13px;color:#${S.hex};opacity:.9;margin-top:auto">${para}</p>
+      <div style="${B};font-size:21px;font-weight:600;color:#${P.hex};margin-top:12px">1 : 1,618</div>
+    </div>
+    <div class="chips">${chip('Título',S,I)}${chip('Marca-texto',markFg,P)}${chip('Número',P,I)}</div>
+  </div>`;
+  $('#ftSel').value=st.ft; $('#fbSel').value=st.fb; $('#fwSel').value=String(st.fw);
+  if(document.activeElement!==$('#ttIn')) $('#ttIn').value=st.tt;
+}
+function fontCss(){
+  const {surface:S, ink:I, pop:P} = pal.type;
+  const fi=fontInfo(st.ft), fbi=fontInfo(st.fb);
+  const list = st.ft===st.fb ? [[st.ft, [...new Set([400,600,st.fw])].filter(w=>fi.cat==='custom'||fi.w.includes(w)).sort()]]
+    : [[st.ft, fi.cat==='custom'?[st.fw===400?400:700]:[st.fw]], [st.fb, fbi.cat==='custom'?[400]:[400,600].filter(w=>fbi.w.includes(w))]];
+  return `@import url('${gfUrl(list)}');
+
+body {
+  background: #${S.hex};
+  color: #${I.hex};
+  font-family: ${fam(st.fb)};
+  font-size: 13px;          /* escala áurea: 13 → 21 → 34 → 55 */
+}
+h1 { font-family: ${fam(st.ft)}; font-weight: ${st.fw}; font-size: 55px; line-height: 1; }
+h2 { font-family: ${fam(st.ft)}; font-weight: ${st.fw}; font-size: 34px; }
+h3 { font-size: 21px; }
+mark, .destaque { background: #${P.hex}; }
+.botao { background: #${P.hex}; color: ${textOn(P)}; }`;
+}
+
+/* ================= SALVAS ================= */
+function loadSaved(){ try{ return JSON.parse(store.get('paleta-aurea')||'[]'); }catch(e){ return []; } }
+function storeSaved(list){ store.set('paleta-aurea', JSON.stringify(list)); }
+function renderSaved(){
+  const list=loadSaved();
+  $('#saved').innerHTML = list.length ? list.map((it,i)=>`<div class="mini" data-i="${i}" role="button" tabindex="0" data-tip="${(it.st&&it.st.mode)==='pair'?'Dupla + destaque':'Proporção áurea'} · #${it.cols.join(' · #')}">${it.cols.map(c=>`<span style="background:#${c}"></span>`).join('')}<button class="x" data-del="${i}" aria-label="Remover">×</button></div>`).join('')
+    : `<span class="empty">Nada salvo ainda. Use “Salvar” no topo da paleta.</span>`;
+}
+function save(){
+  const list=loadSaved(); const cols=pal.roles.map(r=>r.c.hex);
+  if(list.some(x=>x.cols.join()===cols.join())) return toast('Essa paleta já está salva');
+  const snap={...st}; if(st.mode==='pair' && st.pick!=='custom'){ snap.pick='custom'; snap.cus=pal.pop.hex; }
+  list.unshift({cols, st:snap}); storeSaved(list.slice(0,40)); renderSaved(); toast('Paleta salva', cols[0]);
+}
+
+/* ================= TOOLTIP ================= */
+const tipEl=$('#tip'); let tipFor=null;
+function showTip(el){
+  const k=el.dataset.tip; const html = TIPS[k] ?? esc(k);
+  tipEl.innerHTML=html; tipEl.hidden=false; tipFor=el;
+  const r=el.getBoundingClientRect(), tw=tipEl.offsetWidth, th=tipEl.offsetHeight;
+  let x=r.left+r.width/2-tw/2; x=Math.max(8,Math.min(innerWidth-tw-8,x));
+  let y=r.top-th-8; if(y<8) y=r.bottom+8;
+  tipEl.style.transform=`translate(${Math.round(x)}px,${Math.round(y)}px)`;
+  requestAnimationFrame(()=>tipEl.classList.add('show'));
+}
+function hideTip(){ tipFor=null; tipEl.classList.remove('show'); tipEl.hidden=true; }
+document.addEventListener('mouseover', e=>{ const t=e.target.closest('[data-tip]'); if(t){ if(t!==tipFor) showTip(t); } else if(tipFor) hideTip(); });
+document.addEventListener('focusin', e=>{ const t=e.target.closest('[data-tip]'); if(t && e.target.matches(':focus-visible')) showTip(t); });
+document.addEventListener('focusout', hideTip);
+addEventListener('scroll', hideTip, {passive:true});
+addEventListener('keydown', e=>{ if(e.key==='Escape') hideTip(); });
+
+/* ================= TEMA ================= */
+function setTheme(t){
+  if(t==='light'||t==='dark') document.documentElement.dataset.theme=t; else delete document.documentElement.dataset.theme;
+  store.set('paleta-tema', t);
+  $$('#themeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.v===t));
+  if(st.mode==='studio') requestAnimationFrame(draw3d);
+}
+const curTheme = () => document.documentElement.dataset.theme || 'auto';
+$('#themeSeg').onclick=e=>{ const b=e.target.closest('button'); if(b) setTheme(b.dataset.v); };
+
+/* ================= EVENTOS ================= */
+function setBase(h){ h=normHex(h); if(!h) return false; st.base=h; render(); return true; }
+function setPair(k,h){ h=normHex(h); if(!h) return false; st[k]=h; if(k!=='cus'){ if(st.pick==='custom') st.cus=''; st.pick=''; } else st.pick='custom'; render(); return true; }
+
+document.addEventListener('click', e=>{
+  const inf=e.target.closest('.info'); if(inf){ showTip(inf); return; }
+  const c=e.target.closest('[data-copy]'); if(c){ copy(c.dataset.copy, c.dataset.hex); return; }
+  const ss=e.target.closest('[data-set]'); if(ss){ const [h,s2,l]=ss.dataset.set.split(',').map(Number); Object.assign(st,{ch:h,cs:s2,cl:l}); renderStudio(); return; }
+  const sh=e.target.closest('[data-sethex]'); if(sh){ setFromRgb(hexToRgb(sh.dataset.sethex)); renderStudio(); toast('Cor trazida: #'+scHex(), scHex()); return; }
+  const nd=e.target.closest('[data-nudge]'); if(nd){ const [k,d]=nd.dataset.nudge.split(','); if(k==='h') st.ch=mod(st.ch+ +d,360); else if(k==='s') st.cs=clamp(st.cs+ +d); else st.cl=clamp(st.cl+ +d); renderStudio(); return; }
+  const us=e.target.closest('[data-use]'); if(us){ const hx=scHex(), u=us.dataset.use;
+    if(u==='psy'){ st.psy=hx; st.mode='psy'; } else if(u==='golden'){ st.base=hx; st.mode='golden'; } else if(u==='pa'){ st.pa=hx; st.pick=''; st.cus=''; st.mode='pair'; } else { st.cus=hx; st.pick='custom'; st.mode='pair'; }
+    hideTip(); render(); scrollTo({top:0, behavior:'smooth'}); toast('#'+hx+' → '+(u==='psy'?'Psicologia':u==='golden'?'Proporção áurea':u==='pa'?'principal da Dupla':'destaque da Dupla'), hx); return; }
+  const p=e.target.closest('[data-pick]'); if(p){ st.pick=p.dataset.pick; st.cus=''; render(); toast('Destaque: #'+pal.pop.hex, pal.pop.hex); return; }
+  if(e.target.closest('[data-rnd]')) return randomize();
+  if(e.target.closest('[data-save]')) return save();
+  if(e.target.closest('[data-copyall]')) return copy(exportText(fmt), pal.roles[2].c.hex, 'paleta completa');
+});
+$('#modes').onclick=e=>{ const b=e.target.closest('button'); if(b){ st.mode=b.dataset.m; hideTip(); render(); } };
+
+$('#colorIn').addEventListener('input', e=>setBase(e.target.value));
+$('#hexIn').addEventListener('input', e=>{ if(!setBase(e.target.value)) e.target.classList.add('bad'); });
+$('#hexIn').addEventListener('blur', e=>{ e.target.value=st.base; e.target.classList.remove('bad'); });
+$('#exBtn').onclick=()=>{ Object.assign(st,{base:DEF.base,wheel:DEF.wheel,dir:DEF.dir,satCut:DEF.satCut,supL:DEF.supL,accL:DEF.accL,accS:DEF.accS}); render(); };
+$('[data-paste]').onclick=async()=>{ try{ const t=await navigator.clipboard.readText(); const m=t.match(/#?([0-9a-f]{6}|[0-9a-f]{3})\b/i); if(m && setBase(m[1])) toast('Colado: #'+st.base, st.base); else toast('Nenhum HEX encontrado'); }catch(e){ toast('Sem permissão para ler a área de transferência'); } };
+$('#wheelSeg').onclick=e=>{ const b=e.target.closest('button'); if(b){ st.wheel=b.dataset.v; render(); } };
+$('#dirSeg').onclick=e=>{ const b=e.target.closest('button'); if(b){ st.dir=+b.dataset.v; render(); } };
+['satCut','supL','accL','accS'].forEach(k=>$('#'+k).addEventListener('input',e=>{ st[k]=+e.target.value; render(); }));
+$('#resetBtn').onclick=()=>{ Object.assign(st,{wheel:DEF.wheel,dir:DEF.dir,satCut:DEF.satCut,supL:DEF.supL,accL:DEF.accL,accS:DEF.accS}); render(); };
+
+[['pA','pa'],['pB','pb'],['pC','cus']].forEach(([id,k])=>{
+  $('#'+id+'col').addEventListener('input', e=>setPair(k,e.target.value));
+  $('#'+id+'hex').addEventListener('input', e=>{ if(k==='cus' && !e.target.value.trim()){ st.cus=''; st.pick=''; render(); return; } if(!setPair(k,e.target.value)) e.target.classList.add('bad'); });
+  $('#'+id+'hex').addEventListener('blur', ()=>render());
+});
+$('#pCclear').onclick=()=>{ st.cus=''; st.pick=''; render(); };
+$('#swapBtn').onclick=()=>{ [st.pa,st.pb]=[st.pb,st.pa]; render(); };
+$('#bgW').onclick=()=>setPair('pb','FCFCFF');
+$('#bgK').onclick=()=>setPair('pb','0A0C10');
+$('#sideSeg').onclick=e=>{ const b=e.target.closest('button'); if(b){ st.side=+b.dataset.v; if(st.pick!=='custom') st.pick=''; render(); } };
+$('#presets').innerHTML = PRESETS.map((v,i)=>`<button class="preset" data-v="${i}" data-tip="#${v.a} + #${v.b} → #${v.c}"><span class="tri"><span style="background:#${v.a}"></span><span style="background:#${v.b}"></span><span style="background:#${v.c}"></span></span>${v.name}</button>`).join('');
+$('#presets').onclick=e=>{ const b=e.target.closest('.preset'); if(!b) return; const v=PRESETS[+b.dataset.v]; Object.assign(st,{pa:v.a,pb:v.b,cus:v.c,pick:'custom',side:1}); render(); };
+
+function randomize(){
+  if(st.mode==='psy'){ st.psy=rgbToHex(hslToRgb({h:Math.random()*360, s:25+Math.random()*75, l:15+Math.random()*75})); return renderPsy(); }
+  if(st.mode==='studio'){ Object.assign(st,{ch:Math.random()*360, cs:40+Math.random()*60, cl:25+Math.random()*55}); return renderStudio(); }
+  if(st.mode==='golden'){ st.base = rgbToHex(hslToRgb({h:Math.random()*360, s:55+Math.random()*45, l:30+Math.random()*25})); }
+  else { st.pa = rgbToHex(hslToRgb({h:Math.random()*360, s:70+Math.random()*30, l:15+Math.random()*35})); st.pick=''; st.cus=''; }
+  render();
+}
+$('#tabs').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; fmt=b.dataset.f; $$('#tabs button').forEach(x=>x.classList.toggle('on',x===b)); renderCode(); };
+function setPanel(p){ $('#panelType').hidden = p!=='type'; $('#panelComp').hidden = p!=='comp'; $$('#applyTabs button').forEach(x=>x.classList.toggle('on',x.dataset.p===p)); store.set('paleta-aba',p); }
+$('#applyTabs').onclick=e=>{ const b=e.target.closest('button'); if(b) setPanel(b.dataset.p); };
+$('#saved').onclick=e=>{
+  const d=e.target.closest('[data-del]'); if(d){ e.stopPropagation(); const l=loadSaved(); l.splice(+d.dataset.del,1); storeSaved(l); renderSaved(); hideTip(); return; }
+  const m=e.target.closest('.mini'); if(m){ const it=loadSaved()[+m.dataset.i]; if(it){ st={...DEF,...it.st}; buildFontSelects(); loadFontFull(st.ft); loadFontFull(st.fb); render(); } }
+};
+$('#saved').addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target.matches('.mini')) e.target.click(); });
+document.addEventListener('keydown', e=>{
+  if(e.target.matches('input,textarea,select') || e.metaKey || e.ctrlKey || e.altKey) return;
+  const i={'1':0,'2':1,'3':2}[e.key];
+  const sd = st.mode==='studio';
+  if(st.mode==='psy' && (i!==undefined || e.key==='a' || e.key==='A')){ copy('#'+st.psy, st.psy); return; }
+  if(i!==undefined){ if(sd){ const C=fromHex(scHex()); copy(['#'+C.hex, rgbStr(C), sHslStr(scHsl())][i], C.hex); } else { const c=pal.roles[i].c; copy('#'+c.hex, c.hex); } }
+  else if(e.key==='a'||e.key==='A'){ if(sd) copy(studioText(), scHex(), 'valores da cor'); else copy(exportText(fmt), pal.roles[2].c.hex, 'paleta completa'); }
+  else if(e.key==='r'||e.key==='R') randomize();
+  else if(e.key==='m'||e.key==='M'){ st.mode = MODES[(MODES.indexOf(st.mode)+1)%MODES.length]; hideTip(); render(); }
+  else if(e.key==='t'||e.key==='T'){ const dark = curTheme()==='dark' || (curTheme()==='auto' && matchMedia('(prefers-color-scheme: dark)').matches); setTheme(dark?'light':'dark'); toast(dark?'Tema claro':'Tema escuro'); }
+});
+
+// fontes
+$('#ftSel').onchange=e=>{ st.ft=e.target.value; loadFontFull(st.ft); render(); };
+$('#fbSel').onchange=e=>{ st.fb=e.target.value; loadFontFull(st.fb); render(); };
+$('#fwSel').onchange=e=>{ st.fw=+e.target.value; render(); };
+$('#ttIn').addEventListener('input', e=>{ st.tt=e.target.value.slice(0,40); render(); });
+async function addGoogleFont(target){
+  const n=cleanName($('#gfIn').value); if(!n) return toast('Digite o nome de uma fonte do Google Fonts');
+  toast('Carregando '+n+'…');
+  const ok = await loadFontFull(n);
+  if(!ok) return toast('“'+n+'” não foi encontrada no Google Fonts');
+  st[target]=n; buildFontSelects(); render(); toast('Fonte carregada: '+n);
+}
+$('#gfBtn').onclick=()=>addGoogleFont('ft');
+$('#gfBtn2').onclick=()=>addGoogleFont('fb');
+$('#gfIn').addEventListener('keydown', e=>{ if(e.key==='Enter') addGoogleFont('ft'); });
+$('#fontRnd').onclick=()=>{
+  const pickF = cats => { const l=FONTS.filter(f=>cats.includes(f[1])); return l[Math.floor(Math.random()*l.length)]; };
+  const t=pickF(['serif','sans-serif','display']), b=pickF(['sans-serif','serif']);
+  st.ft=t[0]; st.fb = b[0]===t[0] ? 'Inter' : b[0];
+  const heavy=t[2].filter(w=>w>=600); st.fw = heavy.length ? heavy[Math.floor(Math.random()*heavy.length)] : t[2][0];
+  loadFontFull(st.ft); loadFontFull(st.fb); render(); toast(`${st.ft} + ${st.fb}`);
+};
+$('#fontCss').onclick=()=>copy(fontCss(), pal.type.pop.hex, 'CSS das fontes e cores');
+
+/* ================= MODO 3: MONTAR COR ================= */
+const MODES = ['golden','pair','studio','psy'];
+const scHsl = () => ({h:st.ch, s:st.cs, l:st.cl});
+const scHex = () => rgbToHex(hslToRgb(scHsl()));
+function hslToHsv({h,s,l}){ s/=100; l/=100; const v=l+s*Math.min(l,1-l); return {h, s: v ? 2*(1-l/v)*100 : 0, v:v*100}; }
+function hsvToHsl({h,s,v}){ s/=100; v/=100; const l=v*(1-s/2); return {h, s:(l<=0||l>=1) ? 0 : (v-l)/Math.min(l,1-l)*100, l:l*100}; }
+const hsvHex = o => rgbToHex(hslToRgb(hsvToHsl(o)));
+function toOklch({r,g,b}){
+  const f=v=>{ v/=255; return v<=.04045 ? v/12.92 : Math.pow((v+.055)/1.055,2.4); };
+  const R=f(r), G=f(g), B=f(b);
+  const l=Math.cbrt(.4122214708*R+.5363325363*G+.0514459929*B), m=Math.cbrt(.2119034982*R+.6806995451*G+.1073969566*B), s=Math.cbrt(.0883024619*R+.2817188376*G+.6299787005*B);
+  const L=.2104542553*l+.793617785*m-.0040720468*s, A=1.9779984951*l-2.428592205*m+.4505937099*s, Bb=.0259040371*l+.7827717662*m-.808675766*s;
+  const C=Math.hypot(A,Bb); return {L:L*100, C, h: C<.0005 ? 0 : mod(Math.atan2(Bb,A)*180/Math.PI,360)};
+}
+const R0 = v => mod(Math.round(v),360);
+const sHslStr = H => `hsl(${R0(H.h)}, ${Math.round(H.s)}%, ${Math.round(H.l)}%)`;
+const sHsbStr = H => { const v=hslToHsv(H); return `hsb(${R0(H.h)}, ${Math.round(v.s)}%, ${Math.round(v.v)}%)`; };
+const sOkStr = rgb => { const o=toOklch(rgb); return `oklch(${o.L.toFixed(1)}% ${o.C.toFixed(3)} ${o.h.toFixed(1)})`; };
+
+/* --- reconhecer o que foi colado --- */
+function parseColor(raw){
+  const s=(raw||'').trim(); if(!s) return null;
+  const low=s.toLowerCase();
+  const hx = low.match(/^#?([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/) || (low.includes('(') ? null : low.match(/#([0-9a-f]{6}|[0-9a-f]{3})\b/));
+  if(hx) return {fmt:'HEX', rgb:hexToRgb(hx[1].slice(0,6))};
+  const fn = (low.match(/^(rgb|hsl|hsv|hsb)a?\s*\(/)||[])[1];
+  const inner = low.includes('(') ? low.slice(low.indexOf('(')+1).replace(/\).*$/,'') : low;
+  const toks = inner.replace(/[a-z]+\s*:/g,' ').split(/[\s,\/;]+/).filter(Boolean).slice(0,3);
+  if((fn || !low.includes('(')) && toks.length===3 && toks.every(t=>/^-?\d*\.?\d+(deg|°|%)?$/.test(t))){
+    const v=toks.map(parseFloat), pct=toks.map(t=>t.endsWith('%'));
+    const kind = fn || (pct[1]||pct[2]||/deg|°/.test(toks[0]) ? 'hsl' : 'rgb');
+    if(kind==='rgb'){ const [r,g,b]=v.map((x,i)=>pct[i]?x*2.55:x); return [r,g,b].every(x=>x>=0&&x<=255) ? {fmt:'RGB', rgb:{r,g,b}} : null; }
+    if(kind==='hsl') return {fmt:'HSL', hsl:{h:mod(v[0],360), s:clamp(v[1]), l:clamp(v[2])}};
+    return {fmt:'HSB', hsl:hsvToHsl({h:mod(v[0],360), s:clamp(v[1]), v:clamp(v[2])})};
+  }
+  // nomes e outros formatos CSS (tomato, oklch(), lab()…)
+  try{
+    if(window.CSS && CSS.supports('color', s)){
+      const c=document.createElement('canvas'); c.width=c.height=1;
+      const x=c.getContext('2d',{willReadFrequently:true}); x.fillStyle='#000'; x.fillStyle=s; x.fillRect(0,0,1,1);
+      const d=x.getImageData(0,0,1,1).data; return {fmt:'CSS', rgb:{r:d[0],g:d[1],b:d[2]}};
+    }
+  }catch(e){}
+  return null;
+}
+function setFromRgb(rgb){
+  const n=rgbToHsl(rgb); st.cl=n.l;
+  if(n.l>.01 && n.l<99.99){ st.cs=n.s; if(n.s>.01) st.ch=n.h; }
+}
+function applyParsed(p){ if(p.hsl) Object.assign(st,{ch:p.hsl.h, cs:p.hsl.s, cl:p.hsl.l}); else setFromRgb(p.rgb); }
+
+/* --- controles deslizantes --- */
+const SLD = {
+  hsl:[['H','h',360,'°'],['S','s',100,'%'],['L','l',100,'%']],
+  hsb:[['H','h',360,'°'],['S','sv',100,'%'],['B','v',100,'%']],
+  rgb:[['R','r',255,''],['G','g',255,''],['B','b',255,'']],
+};
+const sliderRow = ([k,ch,max,u]) => `<div class="cs"><span class="k"${TIPS['ch_'+ch]?` data-tip="ch_${ch}"`:''}>${k}</span><input type="range" data-ch="${ch}" min="0" max="${max}" step="${max===255?1:.1}" aria-label="${k}"><label class="nb"><input type="number" inputmode="decimal" data-ch="${ch}" min="0" max="${max}" step="1" aria-label="${k} valor"><i>${u}</i></label></div>`;
+function buildSliders(){
+  $('#sliders').innerHTML = SLD[st.sm].map(sliderRow).join('');
+  $$('#smSeg button').forEach(b=>b.classList.toggle('on', b.dataset.v===st.sm));
+}
+const chVal = (ch,H,hv,rgb) => ({h:H.h, s:H.s, l:H.l, sv:hv.s, v:hv.v, r:rgb.r, g:rgb.g, b:rgb.b})[ch];
+function chGrad(ch,H,hv,rgb){
+  const lg = a => `linear-gradient(90deg,${a.join(',')})`;
+  const hsl = (h,s,l) => `hsl(${h.toFixed(1)},${s.toFixed(1)}%,${l.toFixed(1)}%)`;
+  const {r,g,b}=rgb;
+  switch(ch){
+    case 'h': return lg([0,60,120,180,240,300,360].map(h=>hsl(h,H.s,H.l)));
+    case 's': return lg([hsl(H.h,0,H.l), hsl(H.h,100,H.l)]);
+    case 'l': return lg([hsl(H.h,H.s,0), hsl(H.h,H.s,50), hsl(H.h,H.s,100)]);
+    case 'sv': return lg(['#'+hsvHex({h:H.h,s:0,v:hv.v}), '#'+hsvHex({h:H.h,s:100,v:hv.v})]);
+    case 'v': return lg(['#000', '#'+hsvHex({h:H.h,s:hv.s,v:100})]);
+    case 'r': return lg([`rgb(0,${g},${b})`,`rgb(255,${g},${b})`]);
+    case 'g': return lg([`rgb(${r},0,${b})`,`rgb(${r},255,${b})`]);
+    case 'b': return lg([`rgb(${r},${g},0)`,`rgb(${r},${g},255)`]);
+  }
+}
+function setCh(ch, val){
+  val=+val; if(!isFinite(val)) return;
+  if(ch==='h') st.ch=clamp(val,0,360);
+  else if(ch==='s') st.cs=clamp(val);
+  else if(ch==='l') st.cl=clamp(val);
+  else if(ch==='sv'||ch==='v'){
+    const hv=hslToHsv(scHsl()); hv[ch==='sv'?'s':'v']=clamp(val);
+    const n=hsvToHsl(hv); st.cl=n.l; if(n.l>.01 && n.l<99.99) st.cs=n.s;
+  } else { const rgb=hexToRgb(scHex()); rgb[ch]=clamp(Math.round(val),0,255); setFromRgb(rgb); }
+}
+
+/* --- desenho --- */
+let wKey='';
+function drawWheel(){
+  const box=$('#cwheel'), cv=$('#wheelCv'), size=box.clientWidth; if(!size) return;
+  const dpr=Math.min(2,devicePixelRatio||1), N=Math.round(size*dpr), L=Math.round(st.cl*2)/2, key=N+'|'+L;
+  if(key!==wKey){
+    wKey=key; cv.width=cv.height=N;
+    const ctx=cv.getContext('2d'), img=ctx.createImageData(N,N), d=img.data, R=N/2;
+    for(let y=0;y<N;y++) for(let x=0;x<N;x++){
+      const dx=x+.5-R, dy=y+.5-R, r=Math.hypot(dx,dy)/R; if(r>1+1/R) continue;
+      const c=hslToRgb({h:mod(Math.atan2(dy,dx)*180/Math.PI+90,360), s:Math.min(r,1)*100, l:L});
+      const i=(y*N+x)*4; d[i]=c.r; d[i+1]=c.g; d[i+2]=c.b; d[i+3]=clamp((1-r)*R+.5,0,1)*255;
+    }
+    ctx.putImageData(img,0,0);
+  }
+  const a=(st.ch-90)*Math.PI/180, r=st.cs/2, m=$('#wmark');
+  m.style.left=(50+r*Math.cos(a))+'%'; m.style.top=(50+r*Math.sin(a))+'%'; m.style.background='#'+scHex();
+}
+
+const HH=1.1;                                   // meia altura do cilindro
+const v3={yaw:0, pitch:.42}; let v3anim=0;
+const yOf = l => (l/50-1)*HH;
+const kOf = l => st.c3==='cone' ? 1-Math.abs(2*l/100-1) : 1;
+const pt3 = (hue,s,l) => { const r=s/100*kOf(l), a=hue*Math.PI/180; return [r*Math.sin(a), yOf(l), -r*Math.cos(a)]; };
+function cam(w,h){
+  const sc=Math.min(w*.36,h*.33), cx=w/2, cy=h/2;
+  const cyw=Math.cos(v3.yaw), syw=Math.sin(v3.yaw), cp=Math.cos(v3.pitch), sp=Math.sin(v3.pitch);
+  return { sc,cx,cy,cyw,syw,cp,sp,
+    p(x,y,z){ const x1=x*cyw-z*syw, z1=x*syw+z*cyw; return [cx+x1*sc, cy-(y*cp-z1*sp)*sc, y*sp+z1*cp]; } };
+}
+const rgbCss = c => `rgb(${Math.round(c.r)},${Math.round(c.g)},${Math.round(c.b)})`;
+function draw3d(){
+  const cv=$('#cv3'), w=cv.clientWidth, h=cv.clientHeight; if(!w||!h) return;
+  const dpr=Math.min(2,devicePixelRatio||1);
+  if(cv.width!==Math.round(w*dpr) || cv.height!==Math.round(h*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); }
+  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+  const css=getComputedStyle(document.documentElement), ink=css.getPropertyValue('--ink').trim(), muted=css.getPropertyValue('--muted').trim();
+  const C=cam(w,h), items=[], L=st.cl;
+  const poly = (cs, hsl) => { const pr=cs.map(c=>C.p(...c)); items.push({t:'p', pr, z:(pr[0][2]+pr[1][2]+pr[2][2]+pr[3][2])/4, col:rgbCss(hslToRgb(hsl))}); };
+  const line = (a, b, col, al, dash) => { const pa=C.p(...a), pb=C.p(...b); items.push({t:'l', pa, pb, z:(pa[2]+pb[2])/2, col, al, dash}); };
+  const seq = (n, f) => Array.from({length:n+1}, (_,i)=>f(i/n));
+
+  // disco na luz atual (cortado na linha da fatia para a ordem de profundidade não falhar)
+  const angs=[...new Set([...seq(48,t=>t*360).slice(0,48), mod(st.ch,360), mod(st.ch+180,360)].map(a=>Math.round(a*1000)/1000))].sort((a,b)=>a-b);
+  angs.push(angs[0]+360);
+  const NR=8;
+  if(kOf(L)>.004) for(let i=0;i<NR;i++){ const s0=i/NR*100, s1=(i+1)/NR*100;
+    for(let j=0;j<angs.length-1;j++){ const a0=angs[j], a1=angs[j+1];
+      poly([pt3(a0,s0,L),pt3(a1,s0,L),pt3(a1,s1,L),pt3(a0,s1,L)], {h:(a0+a1)/2, s:(s0+s1)/2, l:L}); } }
+  // fatia vertical: matiz atual e a complementar
+  const ls=[...new Set([...seq(18,t=>t*100), L])].sort((a,b)=>a-b), NS=8;
+  for(const hue of [st.ch, st.ch+180]) for(let i=0;i<NS;i++){ const s0=i/NS*100, s1=(i+1)/NS*100;
+    for(let j=0;j<ls.length-1;j++){ const l0=ls[j], l1=ls[j+1];
+      poly([pt3(hue,s0,l0),pt3(hue,s1,l0),pt3(hue,s1,l1),pt3(hue,s0,l1)], {h:hue, s:(s0+s1)/2, l:(l0+l1)/2}); } }
+  // aramado
+  const ring = (l, al, dash) => { for(let j=0;j<64;j++) line(pt3(j/64*360,100,l), pt3((j+1)/64*360,100,l), muted, al, dash); };
+  const silA = [90 - v3.yaw*180/Math.PI, -90 - v3.yaw*180/Math.PI];
+  if(st.c3==='cone'){ ring(50,.55); silA.forEach(a=>{ for(let j=0;j<8;j++){ line(pt3(a,100,j/8*50), pt3(a,100,(j+1)/8*50), muted,.55); line(pt3(a,100,50+j/8*50), pt3(a,100,50+(j+1)/8*50), muted,.55); } }); }
+  else { ring(0,.55); ring(100,.55); ring(50,.35,[3,4]); silA.forEach(a=>{ for(let j=0;j<10;j++) line(pt3(a,100,j*10), pt3(a,100,(j+1)*10), muted,.55); }); }
+  for(let j=0;j<12;j++) line([0,yOf(j/12*100),0],[0,yOf((j+1)/12*100),0], ink, .4);
+  // pontos de matiz em volta
+  for(let j=0;j<12;j++){ const a=j*30*Math.PI/180, p=C.p(1.14*Math.sin(a), yOf(50), -1.14*Math.cos(a)); items.push({t:'d', p, z:p[2], col:`hsl(${j*30},100%,50%)`}); }
+
+  items.sort((a,b)=>a.z-b.z);
+  for(const it of items){
+    if(it.t==='p'){ ctx.beginPath(); ctx.moveTo(it.pr[0][0],it.pr[0][1]); for(let k=1;k<4;k++) ctx.lineTo(it.pr[k][0],it.pr[k][1]); ctx.closePath();
+      ctx.fillStyle=it.col; ctx.fill(); ctx.strokeStyle=it.col; ctx.lineWidth=.8; ctx.stroke(); }
+    else if(it.t==='l'){ ctx.globalAlpha=it.al; ctx.strokeStyle=it.col; ctx.lineWidth=1; ctx.setLineDash(it.dash||[]); ctx.beginPath(); ctx.moveTo(it.pa[0],it.pa[1]); ctx.lineTo(it.pb[0],it.pb[1]); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1; }
+    else { ctx.beginPath(); ctx.arc(it.p[0],it.p[1],4,0,Math.PI*2); ctx.fillStyle=it.col; ctx.fill(); }
+  }
+  // rótulos
+  if(Math.abs(C.cp)>.25){
+    ctx.font='500 11px Inter, system-ui, sans-serif'; ctx.fillStyle=muted; ctx.textAlign='center';
+    const t=C.p(0,HH,0), b=C.p(0,-HH,0);
+    ctx.fillText('L 100 · branco', t[0], t[1]-10); ctx.fillText('L 0 · preto', b[0], b[1]+18);
+  }
+  // marcador da cor
+  const M=C.p(...pt3(st.ch,st.cs,st.cl)), A=C.p(0,yOf(st.cl),0);
+  ctx.strokeStyle=ink; ctx.globalAlpha=.75; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(A[0],A[1]); ctx.lineTo(M[0],M[1]); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1;
+  ctx.beginPath(); ctx.arc(A[0],A[1],2.5,0,Math.PI*2); ctx.fillStyle=ink; ctx.fill();
+  ctx.beginPath(); ctx.arc(M[0],M[1],9.5,0,Math.PI*2); ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fill();
+  ctx.beginPath(); ctx.arc(M[0],M[1],8.5,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
+  ctx.beginPath(); ctx.arc(M[0],M[1],6,0,Math.PI*2); ctx.fillStyle='#'+scHex(); ctx.fill();
+}
+// clique no 3D: acha o ponto do disco ou da fatia que está mais à frente
+function pick3d(sx, sy){
+  const cv=$('#cv3'), C=cam(cv.clientWidth, cv.clientHeight);
+  const X=(sx-C.cx)/C.sc, Y=(C.cy-sy)/C.sc, cands=[], L=st.cl;
+  if(Math.abs(C.sp)>.03){
+    const y0=yOf(L), Z1=(y0*C.cp-Y)/C.sp, x=X*C.cyw+Z1*C.syw, z=-X*C.syw+Z1*C.cyw, k=kOf(L), r=Math.hypot(x,z);
+    if(k>.004 && r<=k*1.03) cands.push({d:y0*C.sp+Z1*C.cp, h:mod(Math.atan2(x,-z)*180/Math.PI,360), s:clamp(r/k*100), l:L});
+  }
+  const a=st.ch*Math.PI/180, ku=Math.sin(a+v3.yaw), kz=-Math.cos(a+v3.yaw);
+  if(Math.abs(ku)>.06 && Math.abs(C.cp)>.03){
+    const t=X/ku, y=(Y+t*kz*C.sp)/C.cp, l=(y/HH+1)*50;
+    if(l>=-1 && l<=101){ const k=kOf(clamp(l)); if(k>.004 && Math.abs(t)<=k*1.03) cands.push({d:y*C.sp+t*kz*C.cp, h:t>=0?st.ch:mod(st.ch+180,360), s:clamp(Math.abs(t)/k*100), l:clamp(l)}); }
+  }
+  if(!cands.length) return false;
+  cands.sort((p,q)=>q.d-p.d); const c=cands[0];
+  Object.assign(st,{ch:c.h, cs:c.s, cl:c.l}); renderStudio(); return true;
+}
+function viewTarget(kind){
+  const a=st.ch*Math.PI/180;
+  return kind==='top' ? {yaw:0, pitch:Math.PI/2} : kind==='side' ? {yaw:Math.PI/2-a, pitch:.03} : {yaw:Math.PI/2-a-.6, pitch:.42};
+}
+function setView(kind){
+  const to=viewTarget(kind), from={...v3}, dy=mod(to.yaw-from.yaw+Math.PI, 2*Math.PI)-Math.PI, t0=performance.now();
+  cancelAnimationFrame(v3anim);
+  const step=now=>{ const k=Math.min(1,(now-t0)/380), e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    v3.yaw=from.yaw+dy*e; v3.pitch=from.pitch+(to.pitch-from.pitch)*e; draw3d(); if(k<1) v3anim=requestAnimationFrame(step); };
+  v3anim=requestAnimationFrame(step);
+}
+
+/* --- harmonias e escala --- */
+const HARM = [
+  ['Complementar','hComp',[180]],
+  ['Ângulo áureo','hGold',[-GOLD, GOLD]],
+  ['Análogas','hAnalog',[-30, 30]],
+  ['Tríade','hTri',[120, 240]],
+  ['Complementar dividida','hSplit',[150, 210]],
+];
+const SCALE = [[50,97],[100,93],[200,85],[300,75],[400,63],[500,50],[600,40],[700,31],[800,22],[900,14]];
+function tile(H, label, me){
+  const hex=rgbToHex(hslToRgb(H)), c=fromHex(hex);
+  return `<div class="tile${me?' me':''}"><button class="pv" style="background:#${hex};color:${textOn(c)}" ${me?'tabindex="-1" aria-hidden="true"':`data-set="${H.h.toFixed(2)},${H.s.toFixed(2)},${H.l.toFixed(2)}" aria-label="Usar #${hex}"`}><span>${label}</span></button><button class="hx" data-copy="#${hex}" data-hex="${hex}">#${hex}</button></div>`;
+}
+function renderHarm(H){
+  $('#harm').innerHTML = HARM.map(([name,tip,offs])=>`<div class="hg"><div class="ht">${name} ${info(tip)}</div><div class="tiles">${tile(H,'você',true)}${offs.map(o=>tile({h:mod(H.h+o,360), s:H.s, l:H.l}, signDeg(o))).join('')}</div></div>`).join('');
+  const near = SCALE.reduce((a,b)=>Math.abs(b[1]-H.l)<Math.abs(a[1]-H.l)?b:a);
+  $('#scale').innerHTML = SCALE.map(([n,l])=>tile({h:H.h, s:H.s, l}, n, false).replace('class="tile"', n===near[0]?'class="tile near"':'class="tile"')).join('');
+}
+const scaleCss = () => { const H=scHsl(); return ':root {\n' + SCALE.map(([n,l])=>`  --cor-${n}: #${rgbToHex(hslToRgb({h:H.h,s:H.s,l}))};`).join('\n') + '\n}'; };
+
+/* --- leitura rápida --- */
+function reads(H, C){
+  const temp = H.s<8 ? 'neutra' : (H.h<75 || H.h>=330) ? 'quente' : (H.h>=165 && H.h<285) ? 'fria' : 'intermediária';
+  const sat = H.s<10 ? 'quase cinza' : H.s<40 ? 'suave' : H.s<75 ? 'média' : 'viva';
+  const luz = H.l<18 ? 'muito escura' : H.l<38 ? 'escura' : H.l<62 ? 'luz média' : H.l<82 ? 'clara' : 'muito clara';
+  const cw=contrast(C.rgb,WHITE), cb=contrast(C.rgb,BLACK), [gw,colw]=grade(cw), [gb,colb]=grade(cb);
+  return `<div class="reads" data-tip="read"><span>${temp}</span><span>${sat}</span><span>${luz}</span></div>
+    <div class="reads"><span data-tip="contrast">texto branco <b>${fmtN(cw)}:1</b> <em style="color:${colw};font-style:normal;font-weight:600">${gw}</em></span><span data-tip="contrast">texto preto <b>${fmtN(cb)}:1</b> <em style="color:${colb};font-style:normal;font-weight:600">${gb}</em></span></div>${psyLine(H)}`;
+}
+function studioText(){
+  const H=scHsl(), C=fromHex(scHex());
+  return [['HEX','#'+C.hex],['RGB',rgbStr(C)],['HSL',sHslStr(H)],['HSB',sHsbStr(H)],['OKLCH',sOkStr(C.rgb)]].map(([k,v])=>k.padEnd(7)+v).join('\n');
+}
+function renderFromPal(){
+  try{
+    const g=computeGolden(), p=computePair();
+    const rowP = (name, cols) => `<div class="fp">${name}<span class="cols">${cols.map(c=>`<button data-sethex="${c.hex}" style="background:#${c.hex}" data-tip="#${c.hex}" aria-label="Pegar #${c.hex}"></button>`).join('')}</span></div>`;
+    $('#fromPal').innerHTML = rowP('Proporção áurea', g.roles.map(r=>r.c)) + rowP('Dupla + destaque', p.roles.map(r=>r.c));
+  }catch(e){ $('#fromPal').innerHTML=''; }
+}
+
+function renderStudio(src){
+  const H=scHsl(), hex=scHex(), C=fromHex(hex), hv=hslToHsv(H), fg=textOn(C);
+  $$('#logo span').forEach((s,i)=>s.style.background='#'+(i===0 ? hex : rgbToHex(hslToRgb({h:H.h+(i===1?180:-GOLD), s:H.s, l:H.l}))));
+  const b=$('#bigsw'); b.style.background='#'+hex; b.style.color=fg; b.dataset.copy='#'+hex; b.dataset.hex=hex; b.setAttribute('aria-label','Copiar #'+hex);
+  b.innerHTML=`<span class="role">Sua cor</span><span><span class="hex">#${hex}</span><span class="tap">${ICON_COPY}clique para copiar</span></span>`;
+  $('#vals').innerHTML = row('HEX','#'+hex,hex) + row('RGB',rgbStr(C),hex) + row('HSL',sHslStr(H),hex) + row('HSB',sHsbStr(H),hex) + row('OKLCH',sOkStr(C.rgb),hex) + reads(H,C);
+  $('#sCol').value='#'+hex.toLowerCase();
+  if(src!==$('#sHex')){ $('#sHex').value=hex; $('#sHex').classList.remove('bad'); }
+  $$('#studio input[data-ch]').forEach(el=>{
+    const ch=el.dataset.ch, v=chVal(ch,H,hv,C.rgb);
+    if(el.type==='range'){ if(el!==src) el.value=v; el.style.background=chGrad(ch,H,hv,C.rgb); el.style.setProperty('--thumb','#'+hex); }
+    else if(el!==src) el.value=Math.round(v);
+  });
+  $$('#shapeSeg button').forEach(x=>x.classList.toggle('on', x.dataset.v===st.c3));
+  drawWheel(); draw3d(); renderHarm(H); renderFromPal();
+  writeHash();
+}
+
+/* --- eventos do modo --- */
+$('#studio').addEventListener('input', e=>{
+  const el=e.target.closest('[data-ch]'); if(!el || el.value==='') return;
+  setCh(el.dataset.ch, el.value); renderStudio(el);
+});
+$('#studio').addEventListener('change', e=>{ if(e.target.matches('.nb input')) renderStudio(); });
+$('#smSeg').onclick=e=>{ const b=e.target.closest('button'); if(b){ st.sm=b.dataset.v; buildSliders(); renderStudio(); } };
+$('#shapeSeg').onclick=e=>{ const b=e.target.closest('button'); if(b){ st.c3=b.dataset.v; renderStudio(); } };
+$('#viewSeg').onclick=e=>{ const b=e.target.closest('button'); if(b) setView(b.dataset.view); };
+$('#sCol').addEventListener('input', e=>{ setFromRgb(hexToRgb(e.target.value)); renderStudio(); });
+$('#sHex').addEventListener('input', e=>{ const h=normHex(e.target.value); if(!h) return e.target.classList.add('bad'); setFromRgb(hexToRgb(h)); renderStudio(e.target); });
+$('#sHex').addEventListener('blur', ()=>renderStudio());
+function useText(t, from){
+  const p=parseColor(t), ok=$('#anyOk');
+  if(!p){ ok.className='fmtok no'; ok.textContent=t.trim()?'Formato não reconhecido':''; if(from) from.classList.toggle('bad', !!t.trim()); return false; }
+  applyParsed(p); ok.className='fmtok ok'; ok.textContent='✓ '+p.fmt+' reconhecido'; if(from) from.classList.remove('bad');
+  renderStudio(); return true;
+}
+$('#anyIn').addEventListener('input', e=>useText(e.target.value, e.target));
+$('#anyIn').addEventListener('keydown', e=>{ if(e.key==='Enter') e.target.blur(); });
+$('#anyPaste').onclick=async()=>{
+  try{ const t=await navigator.clipboard.readText(); $('#anyIn').value=t.trim().slice(0,80); if(useText(t, $('#anyIn'))) toast('Colado: #'+scHex(), scHex()); }
+  catch(e){ toast('Sem permissão para ler a área de transferência. Cole no campo com ⌘V / Ctrl+V'); }
+};
+document.addEventListener('paste', e=>{
+  if(st.mode!=='studio' || e.target.matches('input,textarea,select')) return;
+  const t=(e.clipboardData||window.clipboardData).getData('text'); if(!t) return;
+  e.preventDefault(); $('#anyIn').value=t.trim().slice(0,80);
+  if(useText(t, $('#anyIn'))) toast('Colado: #'+scHex(), scHex()); else toast('Não reconheci essa cor');
+});
+$('#sCopyAll').onclick=()=>copy(studioText(), scHex(), 'valores da cor');
+$('#scaleCopy').onclick=()=>copy(scaleCss(), scHex(), 'escala em CSS');
+
+// círculo: clicar e arrastar
+let wDrag=false;
+function wheelPick(e){
+  const r=$('#cwheel').getBoundingClientRect(), dx=e.clientX-r.left-r.width/2, dy=e.clientY-r.top-r.height/2;
+  st.ch=mod(Math.atan2(dy,dx)*180/Math.PI+90,360); st.cs=clamp(Math.hypot(dx,dy)/(r.width/2)*100); renderStudio();
+}
+$('#cwheel').addEventListener('pointerdown', e=>{ e.preventDefault(); wDrag=true; try{ $('#cwheel').setPointerCapture(e.pointerId); }catch(x){} wheelPick(e); });
+$('#cwheel').addEventListener('pointermove', e=>{ if(wDrag) wheelPick(e); });
+['pointerup','pointercancel'].forEach(t=>$('#cwheel').addEventListener(t, ()=>{ wDrag=false; }));
+
+// 3D: arrastar gira, clique escolhe
+let d3=null;
+const cv3=$('#cv3');
+cv3.addEventListener('pointerdown', e=>{ cancelAnimationFrame(v3anim); try{ cv3.setPointerCapture(e.pointerId); }catch(x){} d3={x:e.clientX, y:e.clientY, yaw:v3.yaw, pitch:v3.pitch, moved:false}; });
+cv3.addEventListener('pointermove', e=>{
+  if(!d3) return; const dx=e.clientX-d3.x, dy=e.clientY-d3.y;
+  if(!d3.moved && Math.hypot(dx,dy)>4){ d3.moved=true; cv3.classList.add('drag'); }
+  if(d3.moved){ v3.yaw=d3.yaw-dx*.01; v3.pitch=clamp(d3.pitch+dy*.01, -.5, Math.PI/2); draw3d(); }
+});
+cv3.addEventListener('pointerup', e=>{ if(d3 && !d3.moved){ const r=cv3.getBoundingClientRect(); pick3d(e.clientX-r.left, e.clientY-r.top); } d3=null; cv3.classList.remove('drag'); });
+cv3.addEventListener('pointercancel', ()=>{ d3=null; cv3.classList.remove('drag'); });
+try{ const ro=new ResizeObserver(()=>{ if(st.mode==='studio'){ drawWheel(); draw3d(); } }); ro.observe(cv3); ro.observe($('#cwheel')); }catch(e){}
+try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ if(st.mode==='studio') draw3d(); }); }catch(e){}
+
+$('#wheelL').innerHTML = sliderRow(['L','l',100,'%']);
+
+/* ================= MODO 4: PSICOLOGIA DAS CORES ================= */
+const FAM = {
+  vermelho:{n:'Vermelho', sw:['EF5350','D32F2F','7F1D1D'], t:['paixão','energia','urgência','força','desejo'],
+    c:'Em excesso vira agressividade, perigo ou alerta, e cansa a vista.', u:'Alimentação, promoções, esportes, entretenimento.',
+    d:'Ótimo para botão de ação e preço em oferta. Use pouco: é cor de destaque. No escuro vira vinho, que passa luxo.', br:'Dezembro Vermelho: prevenção ao HIV/aids.'},
+  laranja:{n:'Laranja', sw:['FFB74D','F57C00','C2410C'], t:['entusiasmo','criatividade','alegria','acessível','calor'],
+    c:'Pode parecer barato ou infantil quando domina a peça.', u:'Varejo, infantil, alimentação, viagens, marcas jovens.',
+    d:'Chama para a ação sem a agressividade do vermelho. Combina muito com azul, seu oposto no círculo.', br:'Fevereiro Laranja: conscientização sobre a leucemia.'},
+  amarelo:{n:'Amarelo', sw:['FFE57F','FBC02D','B8860B'], t:['otimismo','alegria','atenção','juventude','luz'],
+    c:'Muito saturado gera ansiedade. Texto amarelo sobre branco quase não se lê.', u:'Infantil, alimentação, lazer, avisos, varejo popular.',
+    d:'Use sobre fundo escuro ou como faixa e marca-texto. No escuro vira mostarda ou dourado: retrô ou premium.', br:'Setembro Amarelo: prevenção ao suicídio. Maio Amarelo: segurança no trânsito.'},
+  verde:{n:'Verde', sw:['A5D6A7','2E9E5B','1B4D3E'], t:['natureza','saúde','crescimento','equilíbrio','frescor'],
+    c:'Verdes amarelados e apagados podem parecer doentes ou sem vida.', u:'Sustentabilidade, saúde, bem-estar, finanças, agro.',
+    d:'Verde escuro passa tradição e dinheiro; verde-limão e neon passam tecnologia e juventude. Em sites, é a cor de "sucesso".', br:'Setembro Verde: doação de órgãos.'},
+  turquesa:{n:'Turquesa', sw:['80DEEA','00ACC1','00606B'], t:['frescor','clareza','tranquilidade','comunicação','modernidade'],
+    c:'Pode soar frio e impessoal sem um toque quente.', u:'Saúde, spa, tecnologia, turismo e praia, limpeza.',
+    d:'Com coral ou laranja cria o clima de verão perfeito para posts.', br:''},
+  azul:{n:'Azul', sw:['90CAF9','1E6FD9','0D2B5E'], t:['confiança','segurança','calma','profissionalismo','tecnologia'],
+    c:'Frio e distante em excesso. É muito usado, então diferencia pouco.', u:'Bancos, tecnologia, saúde, corporativo, educação.',
+    d:'Escolha segura para sites institucionais. Um destaque quente (laranja, amarelo) evita o visual genérico. Marinho passa autoridade.', br:'Novembro Azul: saúde do homem. Abril Azul: conscientização sobre o autismo.'},
+  roxo:{n:'Roxo', sw:['C5B3F0','7E3FC7','3B1A5E'], t:['luxo','criatividade','mistério','espiritualidade','sabedoria'],
+    c:'Acinzentado fica melancólico; muito saturado pode parecer artificial.', u:'Beleza, cosméticos, área criativa, místico, fintechs.',
+    d:'Lavanda (claro) é calma e delicada; roxo escuro é premium.', br:'Fevereiro Roxo: Alzheimer, lúpus e fibromialgia. Agosto Lilás: combate à violência contra a mulher.'},
+  rosa:{n:'Rosa', sw:['F8C8DC','E94D9C','9C2463'], t:['delicadeza','romance','carinho','diversão','acolhimento'],
+    c:'Pode parecer infantil ou falar só com um público.', u:'Beleza, moda, confeitaria, infantil, autocuidado.',
+    d:'Pink saturado é ousado e jovem; rosa empoeirado (nude) é elegante e moderno.', br:'Outubro Rosa: prevenção ao câncer de mama.'},
+  marrom:{n:'Marrom', sw:['A47148','8B5A2B','4A2C17'], t:['estabilidade','natural','conforto','artesanal','confiável'],
+    c:'Pode parecer sujo, velho ou sem graça.', u:'Café, chocolate, madeira, artesanato, moda rústica, agro.',
+    d:'Com bege e verde-oliva forma a estética terrosa, muito usada no Instagram.', br:''},
+  bege:{n:'Bege / nude', sw:['F3EADB','E2CFB4','C4A985'], t:['elegância','minimalismo','aconchego','natural','suavidade'],
+    c:'Fica apagado se tudo for bege: precisa de contraste.', u:'Moda, decoração, cosméticos, arquitetura, lifestyle.',
+    d:'Fundo excelente para feed "clean". Use texto escuro (marrom ou preto), não cinza claro.', br:''},
+  preto:{n:'Preto', sw:['2B2B2B','161616','000000'], t:['elegância','poder','sofisticação','luxo','modernidade'],
+    c:'Em excesso fica pesado e pode remeter a luto.', u:'Luxo, moda, tecnologia, automóveis, fitness.',
+    d:'Fundo preto faz cores vivas brilharem. Em telas, prefira o quase-preto (#111) ao preto puro.', br:''},
+  branco:{n:'Branco', sw:['FFFFFF','FAF8F5','F1F1EF'], t:['limpeza','simplicidade','paz','pureza','espaço'],
+    c:'Sozinho pode parecer vazio, frio ou hospitalar.', u:'Saúde, tecnologia, minimalismo, casamento.',
+    d:'É o respiro do layout. Off-white (#FAF8F5) é mais acolhedor que o branco puro.', br:'Janeiro Branco: saúde mental.'},
+  cinza:{n:'Cinza', sw:['D9D9D9','9E9E9E','5F6368'], t:['neutralidade','equilíbrio','maturidade','seriedade','discrição'],
+    c:'Pode transmitir tédio, tristeza ou indecisão.', u:'Corporativo, tecnologia, arquitetura, automotivo.',
+    d:'O melhor coadjuvante: textos secundários, bordas e fundos. Deixe a cor da marca falar.', br:''},
+};
+const NEUTRAL = ['preto','branco','cinza'];
+const TONES = {
+  neutro:{n:'Neutro', d:'Não tem matiz: o clima vem da luz. Funciona como base para as outras cores falarem.'},
+  escuro:{n:'Escuro', d:'Mais sério, sofisticado e premium. Passa peso e mistério.'},
+  pastel:{n:'Pastel', d:'Leve, delicado e calmo. Passa acolhimento e suavidade.'},
+  vibrante:{n:'Vibrante', d:'Atenção máxima. Jovem, digital e cheio de energia.'},
+  terroso:{n:'Terroso', d:'Natural, artesanal e aconchegante. Lembra materiais da natureza.'},
+  acinzentado:{n:'Acinzentado', d:'Discreto, maduro e elegante. Clima calmo e vintage.'},
+  claro:{n:'Claro', d:'Suave e arejado: a mensagem da cor, só que mais leve.'},
+  puro:{n:'Puro', d:'A mensagem da cor de forma direta, sem suavizar.'},
+};
+const INTENTS = [
+  ['confianca','Confiança',['azul','verde','cinza'],'Azuis e verdes mais escuros passam solidez.'],
+  ['urgencia','Urgência / oferta',['vermelho','laranja','amarelo'],'Saturado e em pouca área: botão, selo, preço.'],
+  ['calma','Calma',['azul','turquesa','verde','bege'],'Tons claros e pouco saturados acalmam mais.'],
+  ['luxo','Luxo',['preto','roxo','vermelho','amarelo'],'Escuro e pouco saturado: o amarelo vira dourado e o vermelho vira vinho.'],
+  ['alegria','Alegria',['amarelo','laranja','rosa'],'Cores quentes, claras e saturadas.'],
+  ['natureza','Natureza',['verde','marrom','bege'],'Tons terrosos e verdes acinzentados.'],
+  ['saude','Saúde e bem-estar',['verde','turquesa','azul','branco'],'Claros e frescos, com bastante branco.'],
+  ['criatividade','Criatividade',['roxo','laranja','rosa','amarelo'],'Combinações inesperadas valem mais que uma cor sozinha.'],
+  ['romance','Romance',['rosa','vermelho','roxo'],'Rosa e vinho; o pastel deixa mais delicado.'],
+  ['tecnologia','Tecnologia',['azul','turquesa','roxo','preto'],'Azuis elétricos e neon sobre fundo escuro.'],
+  ['comida','Comida',['vermelho','laranja','amarelo','marrom'],'As quentes abrem o apetite; o marrom lembra café e chocolate.'],
+  ['clean','Minimalismo',['branco','bege','cinza','preto'],'Neutros com muito respiro e uma só cor de destaque.'],
+  ['jovem','Juventude',['rosa','laranja','amarelo','verde'],'Saturação alta e contraste forte.'],
+  ['seriedade','Seriedade',['azul','cinza','preto'],'Escuros, pouco saturados e com pouco destaque.'],
+];
+const PVARS = [{s:70,l:86},{s:100,l:50},{s:55,l:42},{s:14,l:60},{s:45,l:20}];
+
+function famOf({h,s,l}){
+  if(l<=9 || (s<12 && l<18)) return 'preto';
+  if(l>=96 || (s<15 && l>=90)) return 'branco';
+  if(s<12) return 'cinza';
+  if(h>=18 && h<55 && s<=65 && l>=58) return 'bege';
+  if(h>=8 && h<50 && (l<42 || (s<55 && l<58)) && !(s>85 && l>35)) return 'marrom';
+  if(h>=290 && h<340) return 'rosa';
+  if((h>=340 || h<12) && l>=72) return 'rosa';
+  if(h>=340 || h<10) return 'vermelho';
+  if(h<42) return 'laranja';
+  if(h<66) return 'amarelo';
+  if(h<170) return 'verde';
+  if(h<190) return 'turquesa';
+  if(h<252) return 'azul';
+  return 'roxo';
+}
+function toneOf({h,s,l}, f){
+  if(NEUTRAL.includes(f)) return 'neutro';
+  if(l<32) return 'escuro';
+  if(l>=78 && s>=25) return 'pastel';
+  if(s>=85 && l>=40 && l<=65) return 'vibrante';
+  if((h<60 || h>=330) && s>=15 && s<60 && l>=32 && l<58) return 'terroso';
+  if(s<30) return 'acinzentado';
+  if(l>=65) return 'claro';
+  return 'puro';
+}
+const readColor = hsl => { const f=famOf(hsl), tk=toneOf(hsl,f); return {f, F:FAM[f], tk, T:TONES[tk]}; };
+function psyLine(H){
+  const r=readColor(H);
+  return `<div class="reads psyl" data-tip="psyLink"><span>${r.F.n} · ${r.T.n.toLowerCase()}: <b>${r.F.t.slice(0,3).join(', ')}</b></span></div>`;
+}
+
+function buildPsy(){
+  $('#intents').innerHTML = INTENTS.map(([k,n])=>`<button data-int="${k}">${n}</button>`).join('');
+  $('#pgrid').innerHTML = Object.entries(FAM).map(([k,F])=>`<article class="pcard" id="pc-${k}" data-fam="${k}">
+    <div class="pband">${F.sw.map(h=>`<button style="background:#${h}" data-copy="#${h}" data-hex="${h}" data-tip="#${h} · clique para copiar" aria-label="Copiar #${h}"></button>`).join('')}<b style="color:${textOn(fromHex(F.sw[1]))}">${F.n}</b></div>
+    <div class="pbody">
+      <div class="kw">${F.t.map(t=>`<span>${t}</span>`).join('')}</div>
+      <div class="pline"><b>Cuidado:</b> ${F.c}</div>
+      <div class="pline"><b>Onde usar:</b> ${F.u}</div>
+      <div class="pline"><b>Dica:</b> ${F.d}</div>
+      ${F.br?`<div class="pline camp"><b>Campanha:</b> ${F.br}</div>`:''}
+    </div>
+    <div class="pfoot"><button class="btn sm" data-psy="${F.sw[1]}">Analisar</button><button class="btn sm" data-studio="${F.sw[1]}">Montar cor</button></div>
+  </article>`).join('');
+}
+function renderPsy(src){
+  const hex=st.psy, C=fromHex(hex), H=C.hsl, r=readColor(H), F=r.F, fg=textOn(C);
+  $$('#logo span').forEach((s,i)=>s.style.background='#'+F.sw[i]);
+  $('#psyCol').value='#'+hex.toLowerCase();
+  if(src!==$('#psyIn')){ $('#psyIn').value='#'+hex; $('#psyIn').classList.remove('bad'); $('#psyOk').textContent=''; }
+
+  const neutral = NEUTRAL.includes(r.f);
+  const vars = (neutral ? [97,82,60,38,10].map(l=>({h:H.h,s:0,l})) : PVARS.map(v=>({h:H.h,...v}))).map(v=>{
+    const hx=rgbToHex(hslToRgb(v)), rr=readColor(fromHex(hx).hsl); return {hx, rr};
+  });
+  $('#psyResult').innerHTML = `
+    <div class="chead"><h2>O que essa cor transmite</h2>
+      <div class="actions"><button class="btn sm" data-goto="${r.f}">Ver na ficha</button><button class="btn sm primary" data-studio="${hex}">Abrir no Montar cor</button></div></div>
+    <div class="presult">
+      <button class="psw" style="background:#${hex};color:${fg}" data-copy="#${hex}" data-hex="${hex}" aria-label="Copiar #${hex}"><span class="role">Analisando</span><span><span class="hex">#${hex}</span><span class="tap">${ICON_COPY}clique para copiar</span></span></button>
+      <div class="pbody0">
+        <div class="ptitle">${F.n} <span class="tbadge" data-tip="tone">${r.T.n}</span></div>
+        <div class="kw big">${F.t.map(t=>`<span>${t}</span>`).join('')}</div>
+        <div class="pline"><b>Neste tom:</b> ${r.T.d}</div>
+        <div class="pline"><b>Cuidado:</b> ${F.c}</div>
+        <div class="pline"><b>Onde usar:</b> ${F.u}</div>
+        <div class="pline"><b>Dica:</b> ${F.d}</div>
+        ${F.br?`<div class="pline camp"><b>Campanha:</b> ${F.br}</div>`:''}
+      </div>
+    </div>
+    <div class="lbl" style="margin-top:18px">${neutral?'Outras luzes':'Mesma matiz, outras mensagens'} ${info('psyVars')}</div>
+    <div class="pvars">${vars.map(v=>`<button class="pvar${v.hx===hex?' on':''}" data-psy="${v.hx}" data-tip="${esc(v.rr.F.t.slice(0,3).join(', '))}"><i style="background:#${v.hx}"></i><span><b>${v.rr.T.n}</b>${v.rr.F.n}</span></button>`).join('')}</div>`;
+
+  const it = INTENTS.find(x=>x[0]===st.pi);
+  $$('#intents button').forEach(b=>b.classList.toggle('on', b.dataset.int===st.pi));
+  $('#ihint').innerHTML = it ? `<b>${it[1]}:</b> ${it[3]}` : 'Escolha uma intenção para destacar as cores na ficha.';
+  $$('.pcard').forEach(c=>{
+    const k=c.dataset.fam, hit = it ? it[2].includes(k) : false;
+    c.classList.toggle('hit', hit); c.classList.toggle('dim', !!it && !hit); c.classList.toggle('me', k===r.f && !it);
+    c.style.order = it ? (hit ? it[2].indexOf(k)-20 : 0) : 0;
+  });
+
+  try{
+    const g=computeGolden(), p=computePair();
+    const block = (title, roles) => `<div><h3>${title}</h3>${roles.map(x=>{ const rr=readColor(x.c.hsl);
+      return `<div class="prow"><i style="background:#${x.c.hex}" data-psy="${x.c.hex}" data-tip="Analisar #${x.c.hex}" role="button" tabindex="0"></i><div><b>${x.name}</b> <small>${x.w}% · ${rr.F.n} ${rr.T.n.toLowerCase()}</small><br>${rr.F.t.slice(0,3).join(', ')}</div></div>`; }).join('')}</div>`;
+    $('#ppal').innerHTML = block('Proporção áurea', g.roles) + block('Dupla + destaque', p.roles);
+  }catch(e){ $('#ppal').innerHTML=''; }
+  writeHash();
+}
+
+function setPsy(hex, src){ const h=normHex(hex); if(!h) return false; st.psy=h; renderPsy(src); return true; }
+$('#psyCol').addEventListener('input', e=>setPsy(e.target.value));
+$('#psyIn').addEventListener('input', e=>{
+  const p=parseColor(e.target.value), ok=$('#psyOk');
+  if(!p){ ok.className='fmtok no'; ok.textContent=e.target.value.trim()?'Formato não reconhecido':''; e.target.classList.toggle('bad', !!e.target.value.trim()); return; }
+  e.target.classList.remove('bad'); ok.className='fmtok ok'; ok.textContent='✓ '+p.fmt+' reconhecido';
+  setPsy(p.rgb ? rgbToHex(p.rgb) : rgbToHex(hslToRgb(p.hsl)), e.target);
+});
+$('#psyIn').addEventListener('keydown', e=>{ if(e.key==='Enter') e.target.blur(); });
+$('#psyFromStudio').onclick=()=>{ setPsy(scHex()); toast('Analisando #'+st.psy, st.psy); };
+$('#intents').onclick=e=>{
+  const b=e.target.closest('[data-int]'); if(!b) return;
+  st.pi = st.pi===b.dataset.int ? '' : b.dataset.int; renderPsy();
+  if(st.pi){ const g=$('#pgridCard').getBoundingClientRect(); if(g.top > innerHeight*.6 || g.top < 0) $('#pgridCard').scrollIntoView({behavior:'smooth', block:'start'}); }
+};
+$('#psy').addEventListener('click', e=>{
+  const a=e.target.closest('[data-psy]'); if(a){ setPsy(a.dataset.psy); if(a.closest('.pcard,#ppal')) $('#psyResult').scrollIntoView({behavior:'smooth', block:'start'}); return; }
+  const g=e.target.closest('[data-goto]'); if(g){ $('#pc-'+g.dataset.goto).scrollIntoView({behavior:'smooth', block:'center'}); return; }
+});
+$('#psy').addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target.matches('[data-psy]')) e.target.click(); });
+document.addEventListener('click', e=>{
+  const s=e.target.closest('[data-studio]'); if(!s) return;
+  setFromRgb(hexToRgb(s.dataset.studio)); st.mode='studio'; hideTip(); render(); scrollTo({top:0, behavior:'smooth'}); toast('Montar cor: #'+scHex(), scHex());
+});
+
+/* ================= CABEÇALHO FIXO ================= */
+const bar=$('#bar');
+const setHH = () => document.documentElement.style.setProperty('--hh', bar.offsetHeight+'px');
+try{ new ResizeObserver(setHH).observe(bar); }catch(e){ addEventListener('resize', setHH); }
+setHH();
+const onScroll = () => bar.classList.toggle('scrolled', scrollY > 4);
+addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+/* ================= INÍCIO ================= */
+try{
+  const q=new URLSearchParams(location.hash.slice(1));
+  for(const k in DEF){ if(q.has(k)) st[k] = typeof DEF[k]==='number' ? +q.get(k) : q.get(k); }
+  if(!MODES.includes(st.mode)) st.mode='golden';
+  if(!isFinite(st.ch)) st.ch=DEF.ch; st.ch=clamp(st.ch,0,360);
+  ['cs','cl'].forEach(k=>{ st[k] = isFinite(st[k]) ? clamp(st[k]) : DEF[k]; });
+  if(!SLD[st.sm]) st.sm='hsl';
+  if(!['cyl','cone'].includes(st.c3)) st.c3='cyl';
+  st.psy = normHex(st.psy) || DEF.psy;
+  if(!INTENTS.some(x=>x[0]===st.pi)) st.pi='';
+  ['base','pa','pb'].forEach(k=>{ st[k]=normHex(st[k])||DEF[k]; });
+  ['ft','fb'].forEach(k=>{ st[k]=cleanName(st[k])||DEF[k]; });
+  if(!(st.fw>=100 && st.fw<=900)) st.fw=DEF.fw;
+  ['dir','side'].forEach(k=>{ if(st[k]!==1 && st[k]!==-1) st[k]=DEF[k]; });
+}catch(e){}
+setTheme(store.get('paleta-tema')||'auto');
+setPanel(store.get('paleta-aba')==='comp'?'comp':'type');
+buildFontSelects(); loadFontFull(st.ft); loadFontFull(st.fb);
+buildSliders(); buildPsy(); Object.assign(v3, viewTarget('3d'));
+render(); renderSaved();
+</script>
+</body>
+</html>
